@@ -73,6 +73,8 @@ feedbag을 함께 쓰면 두 블록이 같은 `herdr-dock`에 모입니다. `$fb
    Jazz Radio Bl…
 ```
 
+dock의 radio pane에는 방송국 목록(메뉴)이 떠 있습니다. 상태를 갱신하는 host 루프는 pane 밖의 분리 프로세스로 돌기 때문에, 목록을 닫아도 사이드바는 계속 갱신됩니다.
+
 ## 4. 액션
 
 | 액션 (Windows) | 액션 (Linux/macOS) | 설명 |
@@ -102,11 +104,22 @@ herdr plugin action invoke start --plugin herdr-radio           # linux / macos
 
 검색 결과는 `hidebroken`과 클릭 수 순으로 최대 10개입니다. 스트림 주소는 자주 바뀌므로 재생이 안 되면 다시 검색하세요.
 
+목록은 입력할 때마다 화면을 지우고 다시 그립니다. 번호를 누르면 재생이 시작되고 목록이 다시 나옵니다. Enter나 `q`는 목록을 닫지 않고 다시 그립니다. 메뉴 자체를 끄려면 Ctrl+C를 누르세요. 이때는 PowerShell 프롬프트가 나타납니다.
+
 ## 6. 자주 겪는 문제
 
 - **`mpv 또는 ffplay가 필요합니다`**: 플레이어가 PATH에 없습니다. 2번 항목처럼 설치하고 서버를 재시작하세요.
-- **사이드바에 블록이 안 보임**: `config.toml`의 `$rd_*` 줄이 있는지 확인하고 `herdr server reload-config`를 실행합니다.
-- **재생은 되는데 상태가 `정지`**: 플레이어가 PowerShell로 찾는 프로세스 이름(`mpv.exe`, `ffplay.exe`)과 다를 수 있습니다. 두 이름 중 하나로 실행되는지 확인하세요.
+- **사이드바에 블록이 안 보임**: `config.toml`의 `$rd_*` 줄이 있는지 확인하고 `herdr server reload-config`를 실행합니다. 줄이 있는데도 안 보이면 host가 돌지 않는 것입니다. 아래 "host가 안 돎" 항목을 보세요.
+- **터미널 창이 뜨고 바로 꺼짐**: 예전 설치본이 남아 있을 때 생깁니다. 다시 설치하세요.
+
+  ```sh
+  herdr plugin uninstall herdr-radio
+  herdr plugin install vrwolf1004/herdr-radio --yes
+  ```
+
+- **host가 안 돎**: 상태 폴더의 `host.log`에 오류가 남습니다 (`%LOCALAPPDATA%\herdr\plugins\herdr-radio\host.log`). 설치 폴더에서 `python src/radio.py ensure`를 실행하면 host를 다시 띄웁니다.
+- **목록에 방송국이 없음**: `config.json`이 `herdr plugin config-dir herdr-radio`가 보여 주는 폴더에 있는지 확인하세요.
+- **재생은 되는데 상태가 `정지`**: 플러그인이 띄운 플레이어만 인식합니다. 명령줄에 `herdr-radio` 표식(`--title=herdr-radio`)이 있는 `mpv.exe`/`ffplay.exe`를 찾습니다. 직접 띄운 mpv는 표식이 없어서 인식되지 않습니다.
 - **`Radio Browser 서버에 연결하지 못했습니다`**: 공개 서버 세 곳이 모두 응답하지 않습니다. 네트워크를 확인하고 잠시 뒤 다시 시도하세요.
 - **pane을 닫아도 재생이 계속됨**: 정상 동작입니다. 완전히 끄려면 `stop` 액션을 쓰세요.
 
