@@ -522,6 +522,8 @@ def menu(args):
     번호 = 재생, s = 정지, k 키워드 = Radio Browser 검색, q = 닫기"""
     state = State(args.state)
     while True:
+        # 매번 화면을 지우고 다시 그린다. 셸 기록이나 이전 출력이 목록 아래에 남지 않게 한다.
+        sys.stdout.write("[H[2J")
         stations = load_stations()
         print(i18n.t("menu.title"))
         if stations:
