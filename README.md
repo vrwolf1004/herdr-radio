@@ -1,41 +1,70 @@
 # herdr-radio
 
-[Radio Browser](https://www.radio-browser.info/) 방송국을 검색하거나 직접 등록한 방송국을 화면 없이 재생하는 [herdr](https://herdr.dev/) 플러그인입니다. herdr 사이드바 하단(`herdr-dock` 블록)에 지금 재생 중인 방송과 상태를 보여 줍니다.
+[**English**](README.md) | [한국어](README.ko.md)
+
+Search [Radio Browser](https://www.radio-browser.info/) stations or play the ones you saved, with no window to manage. The herdr sidebar's bottom block (`herdr-dock`) shows what is playing and whether playback is running.
+
+- Windows, Linux, and macOS
+- Python 3.8+; standard library only
+- [mpv](https://mpv.io/) or ffplay
+- herdr 0.9.0+
+- 7 languages: English, Korean, Japanese, Russian, French, Spanish, German
+
+Sidebar block:
 
 ```text
  ● radio
-   ▶ 재생 중
+   ▶ playing
    Jazz Radio Bl…
 ```
 
-## 요구 사항
+Menu (the `radio` pane):
 
-- Python 3.8 이상 (표준 라이브러리만 사용)
-- [mpv](https://mpv.io/) 또는 ffplay
-  - Windows: `winget install shinchiro.mpv` (명령줄용 빌드). `mpv.net`은 GUI 전용이라 `mpv` 명령이 없습니다.
-  - macOS: `brew install mpv`
-  - Linux: 배포판 패키지 관리자로 `mpv` 설치
+```text
+=== Stations (config.json) ===
+ 1. Jazz Radio Blues
+ 2. Adroit Jazz Underground
 
-## 설치
-
+Number: play  |  s: stop  |  k keyword: search  |  q: close
+>
 ```
+
+## Install
+
+```sh
 herdr plugin install vrwolf1004/herdr-radio
 ```
 
-설치 후 방송국을 등록합니다. 설정 파일은 herdr 플러그인 설정 폴더(`herdr plugin config-dir herdr-radio`)의 `config.json`입니다. 형식은 [config.example.json](config.example.json)을 참고하세요.
+Then save a few stations and add the radio rows to herdr's `config.toml`. See the [usage guide](docs/usage.md).
 
-## 언어
+To develop from a local copy:
 
-메뉴와 사이드바 문구는 한국어, 영어, 일본어, 러시아어, 프랑스어, 스페인어, 독일어를 지원합니다. 아래 순서로 정해집니다.
+```sh
+git clone https://github.com/vrwolf1004/herdr-radio.git
+herdr plugin link ./herdr-radio
+```
 
-1. 환경변수 `HERDR_RADIO_LANG` (예: `en`)
-2. 설정 파일 `config.json`의 `"lang"` 값
-3. OS 언어
-4. 영어 (지원하지 않는 언어일 때)
+### Install a player
 
-## 사이드바 줄 추가
+- **Windows:** `winget install shinchiro.mpv` (the command-line build). `mpv.net` is GUI-only and has no `mpv` command.
+- **macOS:** `brew install mpv`
+- **Linux:** install `mpv` with your package manager.
 
-herdr는 사이드바 레이아웃에 들어 있는 토큰만 그립니다. herdr `config.toml`의 `[ui.sidebar.agents]`에 아래 줄을 넣고 `herdr server reload-config`를 실행하세요.
+## Configure stations
+
+Open the config folder with `herdr plugin config-dir herdr-radio` and edit `config.json`. See [config.example.json](config.example.json) for the format.
+
+```json
+{
+  "stations": [
+    { "name": "Jazz Radio Blues", "url": "http://jazzblues.ice.infomaniak.ch/jazzblues-high.mp3" }
+  ]
+}
+```
+
+## Sidebar rows
+
+herdr draws only the tokens listed in your sidebar layout. Add these rows to `[ui.sidebar.agents]` in `config.toml`, then run `herdr server reload-config`:
 
 ```toml
 [ui.sidebar.agents]
@@ -47,32 +76,58 @@ rows = [
 ]
 ```
 
-- `$rd_*` 토큰은 radio 블록에만 보고되므로 다른 agent 행에는 나오지 않습니다.
-- `herdr-dock`은 feedbag과 같은 공용 workspace입니다. feedbag을 함께 쓰면 두 블록이 같은 dock에 모이고, 맨 아래 정렬은 feedbag이 담당합니다.
-- `ui.agent_panel_sort`는 기본값 `"spaces"`로 두세요.
+- The `$rd_*` tokens appear only on the radio block, so other agent rows are unaffected.
+- `herdr-dock` is the shared workspace used by herdr-ai-feedbag. If both plugins are installed, their blocks share the dock, and herdr-ai-feedbag keeps the dock at the bottom.
+- Keep `ui.agent_panel_sort` at its default, `"spaces"`.
 
-## 액션
+## Actions
 
-| 액션 | 설명 |
+| Action | Description |
 | --- | --- |
-| `start` | 마지막으로 재생한 방송을 다시 틀고, 없으면 `config.json`의 첫 방송을 틉니다 |
-| `stop` | 재생을 멈춥니다. 사이드바 블록은 남고 상태만 `■ 정지`로 바뀝니다 |
-| `menu` | 검색 pane을 엽니다. 키워드를 입력하면 Radio Browser에서 찾고, Enter만 치면 `config.json` 목록을 보여 줍니다 |
+| `start` | Plays the last station again. If there is none, plays the first station in `config.json` |
+| `stop` | Stops playback. The block stays and shows `■ stopped` |
+| `menu` | Opens the station pane. Type a keyword to search Radio Browser, or press Enter to see your `config.json` list |
+| `play-1` … `play-6` | Plays the Nth station in `config.json` |
 
-Windows에서는 액션 id 뒤에 `-windows`가 붙습니다.
+On Windows, append `-windows` to each action id:
 
 ```sh
 herdr plugin action invoke start-windows --plugin herdr-radio   # windows
 herdr plugin action invoke start --plugin herdr-radio           # linux / macos
 ```
 
-## 주의
+## Language
 
-- 플러그인은 샌드박스 없이 사용자 권한으로 실행됩니다. 설치 전에 코드를 확인하세요.
-- 방송 스트림마다 이용 조건이 다를 수 있습니다. 개인 청취 용도로 사용하세요.
-- 스트림 주소는 자주 바뀌므로 재생이 안 되면 `menu`에서 다시 검색하세요.
-- pane을 닫아도 재생은 계속됩니다. 완전히 끄려면 `stop` 액션을 쓰세요.
+The menu and sidebar text follow the first match in this list:
 
-## 라이선스
+1. The `HERDR_RADIO_LANG` environment variable (for example, `en`)
+2. The `"lang"` value in `config.json`
+3. Your OS language
+4. English, if the OS language is not supported
 
-미정 (`herdr_api.py`는 [herdr-ai-feedbag](https://github.com/vrwolf1004/herdr-ai-feedbag)(MIT)에서 가져왔습니다.)
+## Notes
+
+- The plugin runs with your user permissions and no sandbox. Read the code before installing.
+- Each stream has its own terms of use. Use it for personal listening.
+- Stream addresses change often. If a station stops working, search for it again in `menu`.
+- Closing the pane does not stop playback. Use the `stop` action to turn it off.
+
+## Documentation
+
+- [Usage guide (English)](docs/usage.md)
+- [Architecture](docs/architecture.md)
+- [TODO](docs/todo.md)
+
+Korean documents are in the same `docs/` folder. The Korean README is [README.ko.md](README.ko.md).
+
+## License
+
+Undecided. `herdr_api.py` is taken from [herdr-ai-feedbag](https://github.com/vrwolf1004/herdr-ai-feedbag) (MIT).
+
+---
+
+## Support the project
+
+If this project is useful to you, consider buying the developer a coffee.
+
+[![Support on Ko-fi](https://img.shields.io/badge/Ko--fi-Support-FF5E5B?style=for-the-badge&logo=buymeacoffee&logoColor=white)](https://ko-fi.com/dev_ohyt)
