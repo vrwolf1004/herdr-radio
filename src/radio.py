@@ -419,7 +419,10 @@ class Host:
 
 
 def cmd_host(args):
-    Host(args).run()
+    try:
+        Host(args).run()
+    except KeyboardInterrupt:
+        pass  # Ctrl+C 로 직접 멈춘 것이므로 트레이스백 없이 끝낸다
     return 0
 
 
