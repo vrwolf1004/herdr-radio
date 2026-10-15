@@ -24,6 +24,15 @@ herdr plugin install vrwolf1004/herdr-radio
 
 설치 후 방송국을 등록합니다. 설정 파일은 herdr 플러그인 설정 폴더(`herdr plugin config-dir herdr-radio`)의 `config.json`입니다. 형식은 [config.example.json](config.example.json)을 참고하세요.
 
+## 언어
+
+메뉴와 사이드바 문구는 한국어, 영어, 일본어, 러시아어, 프랑스어, 스페인어, 독일어를 지원합니다. 아래 순서로 정해집니다.
+
+1. 환경변수 `HERDR_RADIO_LANG` (예: `en`)
+2. 설정 파일 `config.json`의 `"lang"` 값
+3. OS 언어
+4. 영어 (지원하지 않는 언어일 때)
+
 ## 사이드바 줄 추가
 
 herdr는 사이드바 레이아웃에 들어 있는 토큰만 그립니다. herdr `config.toml`의 `[ui.sidebar.agents]`에 아래 줄을 넣고 `herdr server reload-config`를 실행하세요.

@@ -28,6 +28,7 @@ import urllib.parse
 import urllib.request
 
 import herdr_api
+import i18n
 
 PLUGIN_ID = "herdr-radio"
 SOURCE = f"plugin:{PLUGIN_ID}"
@@ -138,7 +139,7 @@ def api_get(path, params):
                 return json.load(resp)
         except OSError as error:
             last_error = error
-    raise RuntimeError(f"Radio Browser 서버에 연결하지 못했습니다: {last_error}")
+    raise RuntimeError(i18n.t("error.radio_browser", detail=last_error))
 
 
 def search(keyword, limit=10):
@@ -241,7 +242,7 @@ def play(state, station):
     stop(state)
     name, path = find_player()
     if not path:
-        raise RuntimeError("mpv 또는 ffplay가 필요합니다. Windows: winget install shinchiro.mpv")
+        raise RuntimeError(i18n.t("error.no_player"))
     if name == "mpv":
         args = [path, "--no-video", "--no-terminal", "--really-quiet", f"--title={PLAYER_MARKER}", station["url"]]
     else:
@@ -375,9 +376,9 @@ class Host:
     def report(self):
         if self.playing and self.station:
             now = short_name(self.station["name"])
-            tokens = {"rd_now": now, "rd_state": "▶ 재생 중"}
+            tokens = {"rd_now": now, "rd_state": i18n.t("token.playing")}
         else:
-            tokens = {"rd_now": "-", "rd_state": "■ 정지"}
+            tokens = {"rd_now": "-", "rd_state": i18n.t("token.stopped")}
         ok = herdr_api.try_request("pane.report_metadata", {
             "pane_id": self.pane_id,
             "source": SOURCE,
@@ -428,26 +429,26 @@ def cmd_host(args):
 def cmd_start(args):
     state = State(args.state)
     if is_playing(state):
-        print("이미 재생 중입니다.")
+        print(i18n.t("msg.already_playing"))
         cmd_ensure(args)
         return 0
     station = last_station(state)
     if station is None:
-        print("재생할 방송이 없습니다. config.json 에 stations 를 넣거나 menu 액션을 쓰세요.")
+        print(i18n.t("msg.no_station"))
         return 1
     try:
         play(state, station)
     except RuntimeError as error:
         print(error)
         return 1
-    print(f"재생: {station['name']}")
+    print(i18n.t("msg.playing", name=station["name"]))
     cmd_ensure(args)
     return 0
 
 
 def cmd_stop(args):
     state = State(args.state)
-    print("정지했습니다." if stop(state) else "재생 중인 방송이 없습니다.")
+    print(i18n.t("msg.stopped") if stop(state) else i18n.t("msg.not_playing"))
     return 0
 
 
@@ -455,7 +456,7 @@ def cmd_status(args):
     state = State(args.state)
     station = last_station(state)
     label = station["name"] if station else "-"
-    print(f"{'재생 중' if is_playing(state) else '정지'}: {label}")
+    print(f"{i18n.t('state.playing' if is_playing(state) else 'state.stopped')}: {label}")
     return 0
 
 
@@ -472,7 +473,7 @@ def play_and_report(args, station):
         print(error)
         return False
     cmd_ensure(args)
-    print(f"재생 중: {station['name']}")
+    print(i18n.t("msg.playing", name=station["name"]))
     return True
 
 
@@ -481,7 +482,7 @@ def cmd_play(args):
     stations = load_stations()
     index = args.index
     if not 1 <= index <= len(stations):
-        print(f"방송 번호 {index} 가 없습니다. config.json 에 {len(stations)}개가 있습니다.")
+        print(i18n.t("msg.no_index", index=index, count=len(stations)))
         return 1
     return 0 if play_and_report(args, stations[index - 1]) else 1
 
@@ -492,18 +493,18 @@ def menu(args):
     state = State(args.state)
     while True:
         stations = load_stations()
-        print("=== 방송국 목록 (config.json) ===")
+        print(i18n.t("menu.title"))
         if stations:
             print_stations(stations)
         else:
-            print("config.json 에 방송국이 없습니다.")
-        print("\n번호: 재생  |  s: 정지  |  k 키워드: 검색  |  q: 닫기")
+            print(i18n.t("menu.empty"))
+        print(i18n.t("menu.help"))
         choice = input("> ").strip()
 
         if choice in ("", "q"):
             return 0
         if choice == "s":
-            print("정지했습니다." if stop(state) else "재생 중인 방송이 없습니다.")
+            print(i18n.t("msg.stopped") if stop(state) else i18n.t("msg.not_playing"))
             continue
         if choice.startswith("k "):
             keyword = choice[2:].strip()
@@ -513,17 +514,17 @@ def menu(args):
                 print(error)
                 continue
             if not options:
-                print("검색 결과가 없습니다.")
+                print(i18n.t("menu.no_results"))
                 continue
             print_stations(options)
-            picked = input("검색 결과 번호 (Enter=취소): ").strip()
+            picked = input(i18n.t("menu.pick_result")).strip()
             if picked.isdigit() and 1 <= int(picked) <= len(options):
                 play_and_report(args, options[int(picked) - 1])
             continue
         if choice.isdigit() and 1 <= int(choice) <= len(stations):
             play_and_report(args, stations[int(choice) - 1])
             continue
-        print("알 수 없는 입력입니다.")
+        print(i18n.t("menu.unknown"))
 
 
 def build_parser():

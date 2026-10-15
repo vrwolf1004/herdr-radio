@@ -1,0 +1,20 @@
+{
+  "error.radio_browser": "Не удалось подключиться к серверу Radio Browser: {detail}",
+  "error.no_player": "Нужен mpv или ffplay. Windows: winget install shinchiro.mpv",
+  "token.playing": "▶ играет",
+  "token.stopped": "■ остановлено",
+  "state.playing": "играет",
+  "state.stopped": "остановлено",
+  "msg.already_playing": "Уже воспроизводится.",
+  "msg.no_station": "Нет станции для воспроизведения. Добавьте станции в config.json или используйте действие menu.",
+  "msg.playing": "Воспроизведение: {name}",
+  "msg.stopped": "Остановлено.",
+  "msg.not_playing": "Ничего не воспроизводится.",
+  "msg.no_index": "Станции с номером {index} нет. В config.json {count}.",
+  "menu.title": "=== Станции (config.json) ===",
+  "menu.empty": "В config.json нет станций.",
+  "menu.help": "\nНомер: играть  |  s: стоп  |  k слово: поиск  |  q: закрыть",
+  "menu.no_results": "Нет результатов.",
+  "menu.pick_result": "Номер результата (Enter=отмена): ",
+  "menu.unknown": "Неизвестный ввод."
+}

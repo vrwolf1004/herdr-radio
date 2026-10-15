@@ -1,0 +1,20 @@
+{
+  "error.radio_browser": "Radio Browser 서버에 연결하지 못했습니다: {detail}",
+  "error.no_player": "mpv 또는 ffplay가 필요합니다. Windows: winget install shinchiro.mpv",
+  "token.playing": "▶ 재생 중",
+  "token.stopped": "■ 정지",
+  "state.playing": "재생 중",
+  "state.stopped": "정지",
+  "msg.already_playing": "이미 재생 중입니다.",
+  "msg.no_station": "재생할 방송이 없습니다. config.json 에 stations 를 넣거나 menu 액션을 쓰세요.",
+  "msg.playing": "재생 중: {name}",
+  "msg.stopped": "정지했습니다.",
+  "msg.not_playing": "재생 중인 방송이 없습니다.",
+  "msg.no_index": "방송 번호 {index} 가 없습니다. config.json 에 {count}개가 있습니다.",
+  "menu.title": "=== 방송국 목록 (config.json) ===",
+  "menu.empty": "config.json 에 방송국이 없습니다.",
+  "menu.help": "\n번호: 재생  |  s: 정지  |  k 키워드: 검색  |  q: 닫기",
+  "menu.no_results": "검색 결과가 없습니다.",
+  "menu.pick_result": "검색 결과 번호 (Enter=취소): ",
+  "menu.unknown": "알 수 없는 입력입니다."
+}

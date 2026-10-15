@@ -1,0 +1,20 @@
+{
+  "error.radio_browser": "Could not reach the Radio Browser server: {detail}",
+  "error.no_player": "mpv or ffplay is required. Windows: winget install shinchiro.mpv",
+  "token.playing": "▶ playing",
+  "token.stopped": "■ stopped",
+  "state.playing": "playing",
+  "state.stopped": "stopped",
+  "msg.already_playing": "Already playing.",
+  "msg.no_station": "No station to play. Add stations to config.json or use the menu action.",
+  "msg.playing": "Playing: {name}",
+  "msg.stopped": "Stopped.",
+  "msg.not_playing": "Nothing is playing.",
+  "msg.no_index": "No station {index}. config.json has {count}.",
+  "menu.title": "=== Stations (config.json) ===",
+  "menu.empty": "No stations in config.json.",
+  "menu.help": "\nNumber: play  |  s: stop  |  k keyword: search  |  q: close",
+  "menu.no_results": "No results.",
+  "menu.pick_result": "Result number (Enter=cancel): ",
+  "menu.unknown": "Unknown input."
+}
