@@ -23,6 +23,7 @@ import shutil
 import signal
 import subprocess
 import sys
+import threading
 import time
 import urllib.parse
 import urllib.request
@@ -452,6 +453,10 @@ def menu_command(state_dir, config_dir):
 
 
 class Host:
+    """메인 루프(1초)는 heartbeat 와 토큰 갱신만 한다.
+    재생 확인과 agent 등록(socket 대기, PowerShell)은 느릴 수 있어서 워커 스레드가 맡는다.
+    워커가 멈춰도 토큰은 마지막 값으로 계속 나간다."""
+
     def __init__(self, args):
         self.state = State(args.state)
         self.pane_id = args.pane
@@ -459,14 +464,24 @@ class Host:
         self.socket_failures = 0
         self.playing = False
         self.station = None
+        self.lock = threading.Lock()
+        self.stopping = threading.Event()
 
     def refresh_status(self):
-        self.playing = is_playing(self.state)
-        self.station = last_station(self.state)
+        playing = is_playing(self.state)
+        station = last_station(self.state)
+        with self.lock:
+            self.playing = playing
+            self.station = station
+
+    def snapshot(self):
+        with self.lock:
+            return self.playing, self.station
 
     def report(self):
-        if self.playing and self.station:
-            now = short_name(self.station["name"])
+        playing, station = self.snapshot()
+        if playing and station:
+            now = short_name(station["name"])
             tokens = {"rd_now": now, "rd_state": i18n.t("token.playing")}
         else:
             tokens = {"rd_now": "-", "rd_state": i18n.t("token.stopped")}
@@ -480,11 +495,12 @@ class Host:
         self.socket_failures = 0 if ok else self.socket_failures + 1
 
     def register_agent(self):
+        playing, _ = self.snapshot()
         herdr_api.try_request("pane.report_agent", {
             "pane_id": self.pane_id,
             "source": SOURCE,
             "agent": AGENT_ID,
-            "state": "working" if self.playing else "idle",
+            "state": "working" if playing else "idle",
         })
         if self.workspace_id:
             try:
@@ -492,19 +508,26 @@ class Host:
             except (herdr_api.HerdrError, ValueError):
                 pass
 
+    def worker(self):
+        """재생 확인과 agent 등록을 LAYOUT 주기마다 한다. 메인 루프와 따로 돈다."""
+        while not self.stopping.is_set():
+            try:
+                self.refresh_status()
+                self.register_agent()
+            except OSError:
+                pass  # 다음 주기에 다시 시도한다
+            self.stopping.wait(LAYOUT_EVERY_TICKS * TICK_SECONDS)
+
     def run(self):
         self.state.remove("starting")
-        tick = 0
+        threading.Thread(target=self.worker, daemon=True).start()
         try:
             while self.socket_failures < 10:
                 self.state.touch_heartbeat()
-                if tick % LAYOUT_EVERY_TICKS == 0:
-                    self.refresh_status()
-                    self.register_agent()
                 self.report()
-                tick += 1
                 time.sleep(TICK_SECONDS)
         finally:
+            self.stopping.set()
             herdr_api.try_request("pane.release_agent", {"pane_id": self.pane_id, "source": SOURCE, "agent": AGENT_ID})
             self.state.remove("heartbeat")
 

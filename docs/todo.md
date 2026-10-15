@@ -27,7 +27,8 @@
   - 고칠 방향: `tasklist /FI "IMAGENAME eq mpv.exe" /FO CSV /NH`처럼 가벼운 명령을 쓰거나, 플레이어 pid를 `player.pid`에 기록하고 `OpenProcess`로 살아 있는지만 확인합니다.
   - 측정 방법: `Measure-Command { python src/radio.py status }`로 소요 시간을 잽니다.
 
-- [ ] **조회와 재생 확인을 같은 루프에서 처리**
+- [x] **조회와 재생 확인을 같은 루프에서 처리**
+  - 처리: 재생 확인과 agent 등록은 워커 스레드가 맡고, 1초 루프는 heartbeat와 토큰 갱신만 합니다.
   - host 루프에서 `search`는 쓰지 않지만, 재생 상태 확인과 `workspace.list`/`pane.list` 호출이 1초 루프 안에 있습니다. 사용량 블록 개발 때 확인된 "루프가 멈추면 애니메이션이 멈춤"과 같은 문제입니다.
   - 고칠 방향: 프로세스 확인을 5초 주기에서 스레드로 옮깁니다.
 
