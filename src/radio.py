@@ -30,6 +30,9 @@ import urllib.request
 import herdr_api
 import i18n
 
+# Windows 에서 콘솔 프로그램(powershell, tasklist, taskkill)이 터미널 창을 띄우지 않게 한다.
+NO_WINDOW = {"creationflags": subprocess.CREATE_NO_WINDOW} if os.name == "nt" else {}
+
 PLUGIN_ID = "herdr-radio"
 SOURCE = f"plugin:{PLUGIN_ID}"
 # feedbag 과 같은 공용 dock 을 쓴다. 맨 아래 고정은 feedbag 이 하고, 여기서는 자기 블록만 관리한다.
@@ -63,7 +66,12 @@ def state_dir_path():
 
 
 def config_dir_path():
-    return os.environ.get("HERDR_PLUGIN_CONFIG_DIR") or state_dir_path()
+    """herdr 가 주는 설정 폴더. 없으면 herdr 기본 위치(plugins/config/herdr-radio)를 본다."""
+    path = os.environ.get("HERDR_PLUGIN_CONFIG_DIR")
+    if path:
+        return path
+    base = os.environ.get("APPDATA") if herdr_api.IS_WINDOWS else os.path.expanduser("~/.config")
+    return os.path.join(base or os.path.expanduser("~"), "herdr", "plugins", "config", PLUGIN_ID)
 
 
 class State:
@@ -205,10 +213,10 @@ def player_pids():
         )
         out = subprocess.run(
             ["powershell", "-NoProfile", "-Command", script],
-            capture_output=True, text=True,
+            capture_output=True, **NO_WINDOW, text=True,
         ).stdout
         return [int(line) for line in out.split() if line.isdigit()]
-    out = subprocess.run(["pgrep", "-f", PLAYER_MARKER], capture_output=True, text=True).stdout
+    out = subprocess.run(["pgrep", "-f", PLAYER_MARKER], capture_output=True, **NO_WINDOW, text=True).stdout
     return [int(line) for line in out.split() if line.isdigit() and int(line) != os.getpid()]
 
 
@@ -228,7 +236,7 @@ def stop(state):
     for pid in pids:
         if os.name == "nt":
             # /T 로 자식 프로세스까지 함께 끝낸다.
-            subprocess.run(["taskkill", "/PID", str(pid), "/T", "/F"], capture_output=True)
+            subprocess.run(["taskkill", "/PID", str(pid), "/T", "/F"], capture_output=True, **NO_WINDOW)
         else:
             try:
                 os.kill(pid, signal.SIGTERM)
@@ -582,6 +590,9 @@ def build_parser():
 
 def main(argv=None):
     args = build_parser().parse_args(argv)
+    # --config 로 받은 폴더를 환경변수에 넣어, 모든 경로가 같은 설정을 보게 한다.
+    if args.config:
+        os.environ["HERDR_PLUGIN_CONFIG_DIR"] = args.config
     commands = {
         "ensure": cmd_ensure,
         "host": cmd_host,

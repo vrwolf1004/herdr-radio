@@ -39,6 +39,7 @@ def cli(*args, check=True):
         [herdr_bin(), *[str(arg) for arg in args]],
         stdin=subprocess.DEVNULL,
         capture_output=True,
+        **({"creationflags": subprocess.CREATE_NO_WINDOW} if IS_WINDOWS else {}),
         text=True,
         encoding="utf-8",
         errors="replace",
