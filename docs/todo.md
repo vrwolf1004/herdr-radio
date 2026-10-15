@@ -21,7 +21,8 @@
 
 ## 성능
 
-- [ ] **Windows에서 5초마다 PowerShell을 띄움**
+- [x] **Windows에서 5초마다 PowerShell을 띄움**
+  - 처리: pid 파일의 프로세스는 `OpenProcess`로 확인하고(3ms), 검색은 pid 파일이 없을 때만 30초에 한 번 합니다.
   - `is_playing`은 `player_pids`를 호출하고, 그때마다 `powershell -Command`를 실행합니다. 콘솔 창이 깜빡이거나 1초 가까이 걸릴 수 있습니다.
   - 고칠 방향: `tasklist /FI "IMAGENAME eq mpv.exe" /FO CSV /NH`처럼 가벼운 명령을 쓰거나, 플레이어 pid를 `player.pid`에 기록하고 `OpenProcess`로 살아 있는지만 확인합니다.
   - 측정 방법: `Measure-Command { python src/radio.py status }`로 소요 시간을 잽니다.

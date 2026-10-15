@@ -233,14 +233,54 @@ def player_pids():
     return [pid for pid in set(found) if pid != os.getpid()]
 
 
-def is_playing(state):
-    if player_pids():
+def process_alive(pid):
+    """pid 프로세스가 살아 있는지. Windows 는 API 로 확인해서 PowerShell 을 띄우지 않는다."""
+    if os.name == "nt":
+        import ctypes
+        from ctypes import wintypes
+
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        kernel32.OpenProcess.restype = wintypes.HANDLE
+        kernel32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+        kernel32.GetExitCodeProcess.argtypes = [wintypes.HANDLE, ctypes.POINTER(wintypes.DWORD)]
+        kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+        handle = kernel32.OpenProcess(0x1000, False, pid)  # PROCESS_QUERY_LIMITED_INFORMATION
+        if not handle:
+            return False
+        try:
+            code = wintypes.DWORD()
+            if not kernel32.GetExitCodeProcess(handle, ctypes.byref(code)):
+                return False
+            return code.value == 259  # STILL_ACTIVE
+        finally:
+            kernel32.CloseHandle(handle)
+    try:
+        os.kill(pid, 0)
         return True
-    state.remove("player.pid")  # 플레이어가 없으면 남은 기록을 지운다
-    return False
+    except OSError:
+        return False
+
+
+# 무거운 프로세스 검색 결과를 잠깐 기억한다. 검색은 pid 파일이 없을 때만 한다.
+_scan_cache = {"at": 0.0, "playing": False}
+SCAN_INTERVAL_SECONDS = 30
+
+
+def is_playing(state):
+    raw = state.read("player.pid")
+    if raw and raw.isdigit():
+        if process_alive(int(raw)):
+            return True
+        state.remove("player.pid")  # 끝난 플레이어의 기록은 지운다
+    now = time.time()
+    if now - _scan_cache["at"] < SCAN_INTERVAL_SECONDS:
+        return _scan_cache["playing"]
+    _scan_cache.update(at=now, playing=bool(player_pids()))
+    return _scan_cache["playing"]
 
 
 def stop(state):
+    _scan_cache.update(at=0.0, playing=False)  # 정지 직후 예전 결과가 남지 않게 한다
     pids = set(player_pids())
     raw = state.read("player.pid")
     if raw and raw.isdigit():
