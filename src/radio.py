@@ -178,48 +178,52 @@ def find_player():
     return None, None
 
 
-def process_alive(pid):
+PLAYER_MARKER = "herdr-radio"  # 플레이어 창 제목. 명령줄에 들어가서 프로세스를 찾는 표식이 된다.
+
+
+def player_pids():
+    """이 플러그인이 띄운 플레이어 프로세스 pid 목록.
+
+    pid 파일은 상태 폴더가 어긋나면 사라질 수 있으므로, 명령줄의 마커로 직접 찾는다.
+    """
     if os.name == "nt":
-        # os.kill(pid, 0) 은 Windows 에서 프로세스를 죽여 버리므로 tasklist 로 확인한다.
+        script = (
+            "Get-CimInstance Win32_Process -Filter \"Name='mpv.exe' OR Name='ffplay.exe'\" | "
+            f"Where-Object {{ $_.CommandLine -like '*{PLAYER_MARKER}*' }} | "
+            "ForEach-Object { $_.ProcessId }"
+        )
         out = subprocess.run(
-            ["tasklist", "/FI", f"PID eq {pid}", "/NH"], capture_output=True, text=True
+            ["powershell", "-NoProfile", "-Command", script],
+            capture_output=True, text=True,
         ).stdout
-        return str(pid) in out
-    try:
-        os.kill(pid, 0)
-        return True
-    except OSError:
-        return False
-
-
-def current_pid(state):
-    raw = state.read("player.pid")
-    return int(raw) if raw and raw.isdigit() else None
+        return [int(line) for line in out.split() if line.isdigit()]
+    out = subprocess.run(["pgrep", "-f", PLAYER_MARKER], capture_output=True, text=True).stdout
+    return [int(line) for line in out.split() if line.isdigit() and int(line) != os.getpid()]
 
 
 def is_playing(state):
-    pid = current_pid(state)
-    if pid is None:
-        return False
-    if process_alive(pid):
+    if player_pids():
         return True
-    state.remove("player.pid")  # 플레이어가 끝났으면 기록을 지운다
+    state.remove("player.pid")  # 플레이어가 없으면 남은 기록을 지운다
     return False
 
 
 def stop(state):
-    pid = current_pid(state)
+    pids = set(player_pids())
+    raw = state.read("player.pid")
+    if raw and raw.isdigit():
+        pids.add(int(raw))
     state.remove("player.pid")
-    if pid is None:
-        return False
-    if os.name == "nt":
-        subprocess.run(["taskkill", "/PID", str(pid), "/F"], capture_output=True)
-    else:
-        try:
-            os.kill(pid, signal.SIGTERM)
-        except OSError:
-            pass
-    return True
+    for pid in pids:
+        if os.name == "nt":
+            # /T 로 자식 프로세스까지 함께 끝낸다.
+            subprocess.run(["taskkill", "/PID", str(pid), "/T", "/F"], capture_output=True)
+        else:
+            try:
+                os.kill(pid, signal.SIGTERM)
+            except OSError:
+                pass
+    return bool(pids)
 
 
 def play(state, station):
@@ -229,9 +233,9 @@ def play(state, station):
     if not path:
         raise RuntimeError("mpv 또는 ffplay가 필요합니다. Windows: winget install shinchiro.mpv")
     if name == "mpv":
-        args = [path, "--no-video", "--no-terminal", "--really-quiet", station["url"]]
+        args = [path, "--no-video", "--no-terminal", "--really-quiet", f"--title={PLAYER_MARKER}", station["url"]]
     else:
-        args = [path, "-nodisp", "-loglevel", "quiet", station["url"]]
+        args = [path, "-nodisp", "-loglevel", "quiet", "-window_title", PLAYER_MARKER, station["url"]]
 
     kwargs = {}
     if os.name == "nt":
