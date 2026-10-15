@@ -1,37 +1,128 @@
 #!/usr/bin/env python3
-"""herdr-radio: Radio Browser 방송국을 검색해서 화면 없이 소리만 재생한다.
+"""herdr-radio: Radio Browser 방송국을 검색하거나 config.json 의 방송국을 화면 없이 재생한다.
 
-표준 라이브러리만 쓴다. 재생은 mpv(없으면 ffplay)에 맡긴다.
-사용법: radio.py menu | stop | status
+동작 방식
+  - 공용 "herdr-dock" workspace 에 pane 하나를 두고 가짜 agent(radio)로 등록한다.
+    dock 이 없으면 만들고, 이미 있으면(다른 플러그인이 만든 경우) pane 을 나눠 들어간다.
+  - 그 pane 에서 host 루프가 돈다. 재생 상태(방송 이름, 재생 중/정지)를 $rd_now, $rd_state 토큰으로 사이드바에 올린다.
+  - 재생은 detached mpv 프로세스다. pane 을 닫아도 재생은 이어진다.
+
+명령
+  ensure   dock 과 host 를 확인하고 없으면 띄운다 (startup / event hook)
+  host     dock pane 안에서 도는 루프. 사이드바 토큰 갱신
+  start    마지막 방송(없으면 config.json 첫 방송)을 재생한다
+  stop     재생을 멈춘다 (host 는 그대로 두고 상태만 정지로 바뀐다)
+  menu     검색 또는 config.json 목록에서 골라 재생하는 pane
+  status   재생 상태를 출력한다
 """
+
+import argparse
 import json
 import os
 import shutil
 import signal
 import subprocess
 import sys
+import time
 import urllib.parse
 import urllib.request
+
+import herdr_api
+
+PLUGIN_ID = "herdr-radio"
+SOURCE = f"plugin:{PLUGIN_ID}"
+# feedbag 과 같은 공용 dock 을 쓴다. 맨 아래 고정은 feedbag 이 하고, 여기서는 자기 블록만 관리한다.
+DOCK_LABEL = "herdr-dock"
+AGENT_ID = "radio"
+DISPLAY_AGENT = "radio"
+
+TICK_SECONDS = 1
+LAYOUT_EVERY_TICKS = 5        # 맨 아래 위치 확인, agent 재등록, 재생 상태 확인 주기
+HEARTBEAT_STALE_SECONDS = 10
+TOKEN_TTL_MS = 15_000
+NAME_WIDTH = 14               # 사이드바에 올릴 방송 이름 길이
 
 API_HOSTS = [
     "de1.api.radio-browser.info",
     "nl1.api.radio-browser.info",
     "at1.api.radio-browser.info",
 ]
-USER_AGENT = "herdr-radio/0.1"
+USER_AGENT = "herdr-radio/0.2"
 
 
-def state_dir():
-    # herdr 가 주입하는 상태 폴더를 우선 쓰고, 없으면 사용자 홈 아래에 둔다.
-    path = os.environ.get("HERDR_PLUGIN_STATE_DIR") or os.path.join(
-        os.path.expanduser("~"), ".herdr-radio"
-    )
-    os.makedirs(path, exist_ok=True)
-    return path
+# ---------------------------------------------------------------- 경로 / 상태 파일
 
 
-def pid_file():
-    return os.path.join(state_dir(), "player.pid")
+def state_dir_path():
+    path = os.environ.get("HERDR_PLUGIN_STATE_DIR")
+    if path:
+        return path
+    base = os.environ.get("LOCALAPPDATA") if herdr_api.IS_WINDOWS else os.path.expanduser("~/.local/state")
+    return os.path.join(base or os.path.expanduser("~"), "herdr", "plugins", PLUGIN_ID)
+
+
+def config_dir_path():
+    return os.environ.get("HERDR_PLUGIN_CONFIG_DIR") or state_dir_path()
+
+
+class State:
+    """state dir 안의 작은 파일들. host 와 액션이 서로 다른 프로세스라 파일로 주고받는다."""
+
+    def __init__(self, directory):
+        self.directory = directory
+        os.makedirs(directory, exist_ok=True)
+
+    def path(self, name):
+        return os.path.join(self.directory, name)
+
+    def read(self, name):
+        try:
+            with open(self.path(name), encoding="utf-8") as file:
+                return file.read().strip() or None
+        except OSError:
+            return None
+
+    def write(self, name, value):
+        with open(self.path(name), "w", encoding="utf-8") as file:
+            file.write(value)
+
+    def remove(self, name):
+        try:
+            os.remove(self.path(name))
+        except OSError:
+            pass
+
+    def touch_heartbeat(self):
+        self.write("heartbeat", str(time.time()))
+
+    def host_alive(self):
+        beat = self.read("heartbeat")
+        try:
+            return beat is not None and time.time() - float(beat) < HEARTBEAT_STALE_SECONDS
+        except ValueError:
+            return False
+
+
+# ---------------------------------------------------------------- 설정 / 방송 목록
+
+
+def load_stations():
+    """config.json 의 stations 를 읽는다. 항목은 {"name": ..., "url": ...} 이다."""
+    path = os.path.join(config_dir_path(), "config.json")
+    try:
+        with open(path, encoding="utf-8") as file:
+            data = json.load(file)
+    except (OSError, ValueError):
+        return []
+    stations = []
+    for item in data.get("stations", []):
+        url = (item.get("url") or "").strip()
+        if url:
+            stations.append({"name": (item.get("name") or url).strip(), "url": url, "country": ""})
+    return stations
+
+
+# ---------------------------------------------------------------- Radio Browser
 
 
 def api_get(path, params):
@@ -76,6 +167,9 @@ def search(keyword, limit=10):
     return results
 
 
+# ---------------------------------------------------------------- 재생
+
+
 def find_player():
     for exe in ("mpv", "ffplay"):
         path = shutil.which(exe)
@@ -84,15 +178,40 @@ def find_player():
     return None, None
 
 
-def stop():
-    if not os.path.exists(pid_file()):
+def process_alive(pid):
+    if os.name == "nt":
+        # os.kill(pid, 0) 은 Windows 에서 프로세스를 죽여 버리므로 tasklist 로 확인한다.
+        out = subprocess.run(
+            ["tasklist", "/FI", f"PID eq {pid}", "/NH"], capture_output=True, text=True
+        ).stdout
+        return str(pid) in out
+    try:
+        os.kill(pid, 0)
+        return True
+    except OSError:
         return False
-    with open(pid_file(), encoding="utf-8") as f:
-        raw = f.read().strip()
-    os.remove(pid_file())
-    if not raw.isdigit():
+
+
+def current_pid(state):
+    raw = state.read("player.pid")
+    return int(raw) if raw and raw.isdigit() else None
+
+
+def is_playing(state):
+    pid = current_pid(state)
+    if pid is None:
         return False
-    pid = int(raw)
+    if process_alive(pid):
+        return True
+    state.remove("player.pid")  # 플레이어가 끝났으면 기록을 지운다
+    return False
+
+
+def stop(state):
+    pid = current_pid(state)
+    state.remove("player.pid")
+    if pid is None:
+        return False
     if os.name == "nt":
         subprocess.run(["taskkill", "/PID", str(pid), "/F"], capture_output=True)
     else:
@@ -103,23 +222,21 @@ def stop():
     return True
 
 
-def play(url):
+def play(state, station):
     # 이전 재생이 있으면 먼저 끊는다.
-    stop()
+    stop(state)
     name, path = find_player()
     if not path:
-        raise RuntimeError("mpv 또는 ffplay가 필요합니다. Windows: winget install mpv")
+        raise RuntimeError("mpv 또는 ffplay가 필요합니다. Windows: winget install shinchiro.mpv")
     if name == "mpv":
-        args = [path, "--no-video", "--no-terminal", "--really-quiet", url]
+        args = [path, "--no-video", "--no-terminal", "--really-quiet", station["url"]]
     else:
-        args = [path, "-nodisp", "-loglevel", "quiet", url]
+        args = [path, "-nodisp", "-loglevel", "quiet", station["url"]]
 
     kwargs = {}
     if os.name == "nt":
         # 콘솔 pane 을 닫아도 재생이 이어지도록 분리한다.
-        kwargs["creationflags"] = (
-            subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP
-        )
+        kwargs["creationflags"] = subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP
     else:
         kwargs["start_new_session"] = True
 
@@ -130,58 +247,264 @@ def play(url):
         stderr=subprocess.DEVNULL,
         **kwargs,
     )
-    with open(pid_file(), "w", encoding="utf-8") as f:
-        f.write(str(proc.pid))
+    state.write("player.pid", str(proc.pid))
+    # 마지막 방송을 기억해 두면 start 액션이 같은 방송을 다시 튼다.
+    state.write("station.json", json.dumps({"name": station["name"], "url": station["url"]}, ensure_ascii=False))
     return proc.pid
 
 
-def menu():
-    keyword = input("방송국 이름 검색 (예: jazz, bbc, kbs): ").strip()
-    if not keyword:
+def last_station(state):
+    raw = state.read("station.json")
+    if raw:
+        try:
+            return json.loads(raw)
+        except ValueError:
+            pass
+    stations = load_stations()
+    return stations[0] if stations else None
+
+
+# ---------------------------------------------------------------- dock workspace / pane
+
+
+def find_workspace(workspaces):
+    for workspace in workspaces:
+        if workspace.get("label") == DOCK_LABEL:
+            return workspace["workspace_id"]
+    return None
+
+
+def workspace_panes(workspace_id):
+    panes = herdr_api.cli("pane", "list").get("panes", [])
+    return [p for p in panes if p["workspace_id"] == workspace_id]
+
+
+def pick_pane(panes, stored_pane, agent_panes):
+    """dock 안에서 host 를 띄울 pane. 기억해 둔 pane 이 살아 있으면 그것, 아니면 빈 pane 하나."""
+    ids = [p["pane_id"] for p in panes]
+    if stored_pane in ids:
+        return stored_pane
+    free = [p["pane_id"] for p in panes
+            if not p.get("label") and not p.get("tokens") and p["pane_id"] not in agent_panes]
+    return free[0] if free else None
+
+
+def ensure_workspace(state):
+    """공용 dock workspace 와 그 안의 radio pane 을 확보한다."""
+    workspaces = herdr_api.cli("workspace", "list").get("workspaces", [])
+    workspace_id = find_workspace(workspaces)
+    if workspace_id is None:
+        created = herdr_api.cli("workspace", "create", "--label", DOCK_LABEL, "--cwd", state.directory, "--no-focus")
+        workspace_id = created["workspace"]["workspace_id"]
+        state.remove("pane.id")
+    state.write("workspace.id", workspace_id)
+    panes = workspace_panes(workspace_id)
+    agent_panes = {a["pane_id"] for a in herdr_api.cli("agent", "list").get("agents", [])}
+    pane_id = pick_pane(panes, state.read("pane.id"), agent_panes)
+    if pane_id is None:
+        anchor = panes[0]["pane_id"] if panes else None
+        if anchor is None:
+            raise herdr_api.HerdrError(f"workspace {workspace_id} has no pane")
+        split = herdr_api.cli("pane", "split", anchor, "--direction", "down", "--cwd", state.directory)
+        pane_id = split["pane"]["pane_id"]
+    state.write("pane.id", pane_id)
+    return workspace_id, pane_id
+
+
+def keep_at_bottom(workspace_id):
+    workspaces = herdr_api.request("workspace.list", {}).get("workspaces", [])
+    ids = [w["workspace_id"] for w in workspaces]
+    if workspace_id not in ids:
+        return
+    if ids[-1] != workspace_id:
+        herdr_api.try_request("workspace.move", {"workspace_id": workspace_id, "insert_index": len(ids)})
+
+
+# ---------------------------------------------------------------- host (dock pane 안)
+
+
+def short_name(name):
+    name = name.strip() or "?"
+    return name if len(name) <= NAME_WIDTH else name[: NAME_WIDTH - 1] + "…"
+
+
+def host_command(state_dir, config_dir, pane_id):
+    script = os.path.abspath(__file__)
+    command = [sys.executable, "-X", "utf8", script, "host", "--state", state_dir, "--pane", pane_id]
+    if config_dir:
+        command += ["--config", config_dir]
+    return command
+
+
+def cmd_ensure(args):
+    state = State(args.state)
+    if state.host_alive():
         return 0
+    _, pane_id = ensure_workspace(state)
+    herdr_api.cli("pane", "run", pane_id, *host_command(args.state, args.config, pane_id))
+    return 0
+
+
+class Host:
+    def __init__(self, args):
+        self.state = State(args.state)
+        self.pane_id = args.pane
+        self.workspace_id = self.state.read("workspace.id")
+        self.socket_failures = 0
+        self.playing = False
+        self.station = None
+
+    def refresh_status(self):
+        self.playing = is_playing(self.state)
+        self.station = last_station(self.state)
+
+    def report(self):
+        if self.playing and self.station:
+            now = short_name(self.station["name"])
+            tokens = {"rd_now": now, "rd_state": "▶ 재생 중"}
+        else:
+            tokens = {"rd_now": "-", "rd_state": "■ 정지"}
+        ok = herdr_api.try_request("pane.report_metadata", {
+            "pane_id": self.pane_id,
+            "source": SOURCE,
+            "display_agent": DISPLAY_AGENT,
+            "tokens": tokens,
+            "ttl_ms": TOKEN_TTL_MS,
+        })
+        self.socket_failures = 0 if ok else self.socket_failures + 1
+
+    def register_agent(self):
+        herdr_api.try_request("pane.report_agent", {
+            "pane_id": self.pane_id,
+            "source": SOURCE,
+            "agent": AGENT_ID,
+            "state": "working" if self.playing else "idle",
+        })
+        if self.workspace_id:
+            try:
+                keep_at_bottom(self.workspace_id)
+            except (herdr_api.HerdrError, ValueError):
+                pass
+
+    def run(self):
+        self.state.remove("starting")
+        tick = 0
+        try:
+            while self.socket_failures < 10:
+                self.state.touch_heartbeat()
+                if tick % LAYOUT_EVERY_TICKS == 0:
+                    self.refresh_status()
+                    self.register_agent()
+                self.report()
+                tick += 1
+                time.sleep(TICK_SECONDS)
+        finally:
+            herdr_api.try_request("pane.release_agent", {"pane_id": self.pane_id, "source": SOURCE, "agent": AGENT_ID})
+            self.state.remove("heartbeat")
+
+
+def cmd_host(args):
+    Host(args).run()
+    return 0
+
+
+# ---------------------------------------------------------------- 액션
+
+
+def cmd_start(args):
+    state = State(args.state)
+    if is_playing(state):
+        print("이미 재생 중입니다.")
+        cmd_ensure(args)
+        return 0
+    station = last_station(state)
+    if station is None:
+        print("재생할 방송이 없습니다. config.json 에 stations 를 넣거나 menu 액션을 쓰세요.")
+        return 1
     try:
-        results = search(keyword)
+        play(state, station)
     except RuntimeError as error:
         print(error)
         return 1
-    if not results:
+    print(f"재생: {station['name']}")
+    cmd_ensure(args)
+    return 0
+
+
+def cmd_stop(args):
+    state = State(args.state)
+    print("정지했습니다." if stop(state) else "재생 중인 방송이 없습니다.")
+    return 0
+
+
+def cmd_status(args):
+    state = State(args.state)
+    station = last_station(state)
+    label = station["name"] if station else "-"
+    print(f"{'재생 중' if is_playing(state) else '정지'}: {label}")
+    return 0
+
+
+def menu(args):
+    state = State(args.state)
+    keyword = input("방송국 이름 검색 (Enter=config.json 목록): ").strip()
+    if keyword:
+        try:
+            options = search(keyword)
+        except RuntimeError as error:
+            print(error)
+            return 1
+    else:
+        options = load_stations()
+    if not options:
         print("검색 결과가 없습니다.")
         return 0
 
-    for index, station in enumerate(results, 1):
-        print(f"{index:2}. {station['name']} ({station['country']})")
+    for index, station in enumerate(options, 1):
+        country = f" ({station['country']})" if station.get("country") else ""
+        print(f"{index:2}. {station['name']}{country}")
 
     choice = input("번호 선택 (Enter=취소, s=정지): ").strip().lower()
     if choice == "s":
-        print("정지했습니다." if stop() else "재생 중인 방송이 없습니다.")
+        print("정지했습니다." if stop(state) else "재생 중인 방송이 없습니다.")
         return 0
-    if not choice.isdigit() or not 1 <= int(choice) <= len(results):
+    if not choice.isdigit() or not 1 <= int(choice) <= len(options):
         return 0
 
-    station = results[int(choice) - 1]
+    station = options[int(choice) - 1]
     try:
-        play(station["url"])
+        play(state, station)
     except RuntimeError as error:
         print(error)
         return 1
     print(f"재생 중: {station['name']}")
+    cmd_ensure(args)
     print("이 pane 을 닫아도 재생은 계속됩니다. 정지는 stop 액션을 쓰세요.")
     return 0
 
 
-def main(argv):
-    command = argv[1] if len(argv) > 1 else "menu"
-    if command == "menu":
-        return menu()
-    if command == "stop":
-        print("정지했습니다." if stop() else "재생 중인 방송이 없습니다.")
-        return 0
-    if command == "status":
-        print("재생 중" if os.path.exists(pid_file()) else "정지 상태")
-        return 0
-    print(f"알 수 없는 명령: {command}")
-    return 2
+def build_parser():
+    parser = argparse.ArgumentParser(prog="radio.py")
+    parser.add_argument("command", nargs="?", default="menu",
+                        choices=["ensure", "host", "start", "stop", "menu", "status"])
+    parser.add_argument("--state", default=state_dir_path())
+    parser.add_argument("--config", default=os.environ.get("HERDR_PLUGIN_CONFIG_DIR") or "")
+    parser.add_argument("--pane", default=os.environ.get("HERDR_PANE_ID"))
+    return parser
+
+
+def main(argv=None):
+    args = build_parser().parse_args(argv)
+    commands = {
+        "ensure": cmd_ensure,
+        "host": cmd_host,
+        "start": cmd_start,
+        "stop": cmd_stop,
+        "menu": menu,
+        "status": cmd_status,
+    }
+    return commands[args.command](args)
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv))
+    sys.exit(main())

@@ -1,0 +1,12 @@
+{
+  "stations": [
+    {
+      "name": "Jazz Radio Blues",
+      "url": "http://jazzblues.ice.infomaniak.ch/jazzblues-high.mp3"
+    },
+    {
+      "name": "Adroit Jazz Underground",
+      "url": "https://icecast.walmradio.com:8443/jazz"
+    }
+  ]
+}

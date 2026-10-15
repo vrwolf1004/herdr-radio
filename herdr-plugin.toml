@@ -1,21 +1,30 @@
 id = "herdr-radio"
 name = "herdr-radio"
-version = "0.1.0"
+version = "0.2.0"
 min_herdr_version = "0.9.0"
 platforms = ["windows", "linux", "macos"]
-description = "Radio Browser 방송국을 검색해서 화면 없이 소리만 재생한다 (mpv 필요)"
+description = "herdr 사이드바 하단에 방송 상태를 보여주고, 화면 없이 라디오를 재생한다 (mpv 필요)"
 
 # Python 3 표준 라이브러리만 쓴다. 실행기 이름은 OS 마다 다르므로 OS 별로 선언한다.
 # herdr 는 액션 id 중복을 허용하지 않으므로 Windows 쪽 id 에 -windows 를 붙인다.
 
 # ---------------------------------------------------------------- Windows
 
+[[startup]]
+platforms = ["windows"]
+command = ["python", "-X", "utf8", "src/radio.py", "ensure"]
+
+[[events]]
+on = "workspace.created"
+platforms = ["windows"]
+command = ["python", "-X", "utf8", "src/radio.py", "ensure"]
+
 [[actions]]
-id = "menu-windows"
-title = "radio: search and play station"
+id = "start-windows"
+title = "radio: play last or first station"
 platforms = ["windows"]
 contexts = ["global"]
-command = ["herdr", "plugin", "pane", "open", "--plugin", "herdr-radio", "--entrypoint", "menu"]
+command = ["python", "-X", "utf8", "src/radio.py", "start"]
 
 [[actions]]
 id = "stop-windows"
@@ -23,6 +32,13 @@ title = "radio: stop playback"
 platforms = ["windows"]
 contexts = ["global"]
 command = ["python", "-X", "utf8", "src/radio.py", "stop"]
+
+[[actions]]
+id = "menu-windows"
+title = "radio: search and choose station"
+platforms = ["windows"]
+contexts = ["global"]
+command = ["herdr", "plugin", "pane", "open", "--plugin", "herdr-radio", "--entrypoint", "menu"]
 
 [[panes]]
 id = "menu"
@@ -33,12 +49,21 @@ command = ["python", "-X", "utf8", "src/radio.py", "menu"]
 
 # ---------------------------------------------------------------- Linux / macOS
 
+[[startup]]
+platforms = ["linux", "macos"]
+command = ["python3", "-X", "utf8", "src/radio.py", "ensure"]
+
+[[events]]
+on = "workspace.created"
+platforms = ["linux", "macos"]
+command = ["python3", "-X", "utf8", "src/radio.py", "ensure"]
+
 [[actions]]
-id = "menu"
-title = "radio: search and play station"
+id = "start"
+title = "radio: play last or first station"
 platforms = ["linux", "macos"]
 contexts = ["global"]
-command = ["herdr", "plugin", "pane", "open", "--plugin", "herdr-radio", "--entrypoint", "menu"]
+command = ["python3", "-X", "utf8", "src/radio.py", "start"]
 
 [[actions]]
 id = "stop"
@@ -46,6 +71,13 @@ title = "radio: stop playback"
 platforms = ["linux", "macos"]
 contexts = ["global"]
 command = ["python3", "-X", "utf8", "src/radio.py", "stop"]
+
+[[actions]]
+id = "menu"
+title = "radio: search and choose station"
+platforms = ["linux", "macos"]
+contexts = ["global"]
+command = ["herdr", "plugin", "pane", "open", "--plugin", "herdr-radio", "--entrypoint", "menu"]
 
 [[panes]]
 id = "menu"
