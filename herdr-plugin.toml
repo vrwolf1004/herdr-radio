@@ -1,0 +1,55 @@
+id = "herdr-radio"
+name = "herdr-radio"
+version = "0.1.0"
+min_herdr_version = "0.9.0"
+platforms = ["windows", "linux", "macos"]
+description = "Radio Browser 방송국을 검색해서 화면 없이 소리만 재생한다 (mpv 필요)"
+
+# Python 3 표준 라이브러리만 쓴다. 실행기 이름은 OS 마다 다르므로 OS 별로 선언한다.
+# herdr 는 액션 id 중복을 허용하지 않으므로 Windows 쪽 id 에 -windows 를 붙인다.
+
+# ---------------------------------------------------------------- Windows
+
+[[actions]]
+id = "menu-windows"
+title = "radio: search and play station"
+platforms = ["windows"]
+contexts = ["global"]
+command = ["herdr", "plugin", "pane", "open", "--plugin", "herdr-radio", "--entrypoint", "menu"]
+
+[[actions]]
+id = "stop-windows"
+title = "radio: stop playback"
+platforms = ["windows"]
+contexts = ["global"]
+command = ["python", "-X", "utf8", "src/radio.py", "stop"]
+
+[[panes]]
+id = "menu"
+title = "radio"
+platforms = ["windows"]
+placement = "overlay"
+command = ["python", "-X", "utf8", "src/radio.py", "menu"]
+
+# ---------------------------------------------------------------- Linux / macOS
+
+[[actions]]
+id = "menu"
+title = "radio: search and play station"
+platforms = ["linux", "macos"]
+contexts = ["global"]
+command = ["herdr", "plugin", "pane", "open", "--plugin", "herdr-radio", "--entrypoint", "menu"]
+
+[[actions]]
+id = "stop"
+title = "radio: stop playback"
+platforms = ["linux", "macos"]
+contexts = ["global"]
+command = ["python3", "-X", "utf8", "src/radio.py", "stop"]
+
+[[panes]]
+id = "menu"
+title = "radio"
+platforms = ["linux", "macos"]
+placement = "overlay"
+command = ["python3", "-X", "utf8", "src/radio.py", "menu"]
