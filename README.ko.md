@@ -18,6 +18,8 @@
    Jazz Radio Bl…
 ```
 
+재생이 정지 없이 끝나면(연결 실패, 스트림 끊김) `✖ 실패`와 방송 이름이 나옵니다.
+
 메뉴 (`radio` pane):
 
 ```text
@@ -32,7 +34,7 @@
 ## 설치
 
 ```sh
-herdr plugin install vrwolf1004/herdr-radio
+herdr plugin install vrwolf1004/herdr-radio --yes
 ```
 
 설치 후 방송국을 몇 개 등록하고, herdr `config.toml`에 radio 줄을 추가하세요. [사용법](docs/usage.md)을 참고하세요.
@@ -62,7 +64,9 @@ herdr plugin link ./herdr-radio
 }
 ```
 
-## 사이드바 줄 추가
+메뉴에서 검색 결과의 방송을 `a 번호`로 저장할 수도 있습니다.
+
+## 사이드바 줄
 
 herdr는 사이드바 레이아웃에 들어 있는 토큰만 그립니다. `config.toml`의 `[ui.sidebar.agents]`에 아래 줄을 넣고 `herdr server reload-config`를 실행하세요.
 
@@ -76,8 +80,8 @@ rows = [
 ]
 ```
 
-- `$rd_*` 토큰은 radio 블록에만 보고되므로 다른 agent 행에는 나오지 않습니다.
-- `herdr-dock`은 herdr-ai-feedbag과 같은 공용 workspace입니다. 두 플러그인을 함께 쓰면 블록이 같은 dock에 모이고, 맨 아래 정렬은 herdr-ai-feedbag이 담당합니다.
+- `$rd_*` 토큰은 radio 블록에만 나오므로 다른 agent 행에는 영향이 없습니다.
+- `herdr-dock`은 herdr-ai-feedbag과 함께 쓰는 공용 workspace입니다. 두 플러그인을 함께 설치하면 블록이 같은 dock에 모이고, dock은 맨 아래에 놓입니다. radio만 설치해도 radio 워커가 dock을 맨 아래로 유지합니다.
 - `ui.agent_panel_sort`는 기본값 `"spaces"`로 두세요.
 
 ## 액션
@@ -85,11 +89,13 @@ rows = [
 | 액션 | 설명 |
 | --- | --- |
 | `start` | 마지막으로 재생한 방송을 다시 틉니다. 없으면 `config.json`의 첫 방송을 틉니다 |
-| `stop` | 재생을 멈춥니다. 블록은 남고 상태만 `■ 정지`로 바뀝니다 |
-| `menu` | 방송국 pane을 엽니다. 키워드를 입력하면 Radio Browser에서 찾고, Enter만 치면 `config.json` 목록을 보여 줍니다 |
-| `play-1` … `play-6` | `config.json`의 N번째 방송을 바로 틉니다 |
+| `stop` | 재생을 멈춥니다. 블록은 남고 `■ 정지`로 바뀝니다 |
+| `menu` | 방송국 pane을 엽니다. 키워드를 입력하면 Radio Browser에서 검색하고, Enter를 누르면 `config.json` 목록을 보여 줍니다 |
+| `play-1` … `play-6` | `config.json`의 N번째 방송을 틉니다 |
+| `next` / `prev` | `config.json` 목록에서 다음 또는 이전 방송을 틉니다 |
+| `volume-up` / `volume-down` | 재생 중인 mpv의 볼륨을 5만큼 올리거나 내립니다 (mpv 전용) |
 
-Windows에서는 액션 id 뒤에 `-windows`가 붙습니다.
+Windows에서는 각 액션 id 뒤에 `-windows`를 붙입니다.
 
 ```sh
 herdr plugin action invoke start-windows --plugin herdr-radio   # windows
@@ -98,36 +104,28 @@ herdr plugin action invoke start --plugin herdr-radio           # linux / macos
 
 ## 언어
 
-메뉴와 사이드바 문구는 다음 순서로 정해집니다.
+메뉴와 사이드바 문구는 아래 순서에서 처음 찾은 언어를 씁니다.
 
 1. 환경변수 `HERDR_RADIO_LANG` (예: `en`)
-2. 설정 파일 `config.json`의 `"lang"` 값
+2. `config.json`의 `"lang"` 값
 3. OS 언어
-4. 영어 (지원하지 않는 언어일 때)
+4. 지원하지 않는 언어이면 영어
 
-## 주의
+## 참고
 
 - 플러그인은 샌드박스 없이 사용자 권한으로 실행됩니다. 설치 전에 코드를 확인하세요.
-- 방송 스트림마다 이용 조건이 다를 수 있습니다. 개인 청취 용도로 사용하세요.
-- 스트림 주소는 자주 바뀌므로 재생이 안 되면 `menu`에서 다시 검색하세요.
-- pane을 닫아도 재생은 계속됩니다. 완전히 끄려면 `stop` 액션을 쓰세요.
+- 방송 스트림마다 이용 조건이 다를 수 있습니다. 개인 청취 용도로 쓰세요.
+- 스트림 주소는 자주 바뀝니다. 재생이 안 되면 `menu`에서 다시 검색하세요.
+- pane을 닫아도 재생은 계속됩니다. 끄려면 `stop` 액션을 쓰세요.
 
 ## 문서
 
-- [사용법](docs/usage.md)
+- [사용법 (한국어)](docs/usage.md)
 - [구조 및 동작 방식](docs/architecture.md)
 - [TODO](docs/todo.md)
 
-영문 README는 [README.md](README.md)입니다.
+영어 문서는 [사용법 (English)](docs/usage.md)과 [README.md](README.md)에 있습니다.
 
 ## 라이선스
 
-미정 (`herdr_api.py`는 [herdr-ai-feedbag](https://github.com/vrwolf1004/herdr-ai-feedbag)(MIT)에서 가져왔습니다.)
-
----
-
-## 프로젝트 응원하기
-
-프로젝트가 도움이 되셨다면 커피 한 잔으로 개발을 응원해 주세요.
-
-[![Ko-fi에서 응원하기](https://img.shields.io/badge/Ko--fi-%EC%9D%91%EC%9B%90%ED%95%98%EA%B8%B0-FF5E5B?style=for-the-badge&logo=buymeacoffee&logoColor=white)](https://ko-fi.com/dev_ohyt)
+미정. `herdr_api.py`는 [herdr-ai-feedbag](https://github.com/vrwolf1004/herdr-ai-feedbag)(MIT)에서 가져왔습니다.
