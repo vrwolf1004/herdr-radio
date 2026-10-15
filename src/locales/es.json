@@ -16,5 +16,9 @@
   "menu.help": "\nNúmero: reproducir  |  s: detener  |  k palabra: buscar  |  q: cerrar",
   "menu.no_results": "Sin resultados.",
   "menu.pick_result": "Número del resultado (Enter=cancelar): ",
-  "menu.unknown": "Entrada desconocida."
+  "menu.unknown": "Entrada desconocida.",
+  "menu.pick_result_add": "Número del resultado = reproducir, a número = guardar en config.json (Enter=cancelar): ",
+  "msg.saved": "Guardada: {name}",
+  "msg.exists": "Ya guardada: {name}",
+  "msg.step_none": "No hay emisora a la que cambiar."
 }

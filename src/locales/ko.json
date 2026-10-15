@@ -16,5 +16,9 @@
   "menu.help": "\n번호: 재생  |  s: 정지  |  k 키워드: 검색  |  q: 닫기",
   "menu.no_results": "검색 결과가 없습니다.",
   "menu.pick_result": "검색 결과 번호 (Enter=취소): ",
-  "menu.unknown": "알 수 없는 입력입니다."
+  "menu.unknown": "알 수 없는 입력입니다.",
+  "menu.pick_result_add": "검색 결과 번호 = 재생, a 번호 = config.json 에 저장 (Enter=취소): ",
+  "msg.saved": "저장했습니다: {name}",
+  "msg.exists": "이미 저장된 방송입니다: {name}",
+  "msg.step_none": "이동할 방송이 없습니다."
 }

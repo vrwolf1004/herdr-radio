@@ -16,5 +16,9 @@
   "menu.help": "\nNumber: play  |  s: stop  |  k keyword: search  |  q: close",
   "menu.no_results": "No results.",
   "menu.pick_result": "Result number (Enter=cancel): ",
-  "menu.unknown": "Unknown input."
+  "menu.unknown": "Unknown input.",
+  "menu.pick_result_add": "Result number = play, a number = save to config.json (Enter=cancel): ",
+  "msg.saved": "Saved: {name}",
+  "msg.exists": "Already saved: {name}",
+  "msg.step_none": "No station to move to."
 }

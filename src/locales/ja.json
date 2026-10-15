@@ -16,5 +16,9 @@
   "menu.help": "\n番号: 再生  |  s: 停止  |  k キーワード: 検索  |  q: 閉じる",
   "menu.no_results": "検索結果がありません。",
   "menu.pick_result": "検索結果の番号 (Enter=キャンセル): ",
-  "menu.unknown": "不明な入力です。"
+  "menu.unknown": "不明な入力です。",
+  "menu.pick_result_add": "検索結果の番号 = 再生, a 番号 = config.json に保存 (Enter=キャンセル): ",
+  "msg.saved": "保存しました: {name}",
+  "msg.exists": "すでに保存されています: {name}",
+  "msg.step_none": "移動先の放送局がありません。"
 }

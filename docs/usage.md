@@ -83,6 +83,8 @@ dock의 radio pane에는 방송국 목록(메뉴)이 떠 있습니다. 상태를
 | `stop-windows` | `stop` | 재생을 멈춥니다. 블록은 남고 상태만 `■ 정지`로 바뀝니다 |
 | `menu-windows` | `menu` | 방송국 선택 pane을 엽니다 |
 | `play-N-windows` | `play-N` | `config.json`의 N번째 방송(1~6)을 바로 틉니다 |
+| `next-windows` | `next` | `config.json` 목록에서 지금 방송의 다음 방송을 틉니다. 끝에 오면 처음으로 돌아갑니다 |
+| `prev-windows` | `prev` | 이전 방송을 틉니다. 처음에 오면 끝으로 돌아갑니다 |
 
 실행 예:
 
@@ -100,6 +102,7 @@ herdr plugin action invoke start --plugin herdr-radio           # linux / macos
 | 번호 | `config.json` 목록에서 그 방송을 재생합니다 |
 | `s` | 재생을 멈춥니다 |
 | `k 키워드` | Radio Browser에서 검색합니다. 결과 번호를 한 번 더 입력하면 재생합니다 |
+| `a 번호` | 검색 결과의 방송을 `config.json`에 저장합니다. 재생하지는 않습니다. 이미 있으면 알려 줍니다 |
 | `q` 또는 Enter | 메뉴를 닫습니다 |
 
 검색 결과는 `hidebroken`과 클릭 수 순으로 최대 10개입니다. 스트림 주소는 자주 바뀌므로 재생이 안 되면 다시 검색하세요.

@@ -16,5 +16,9 @@
   "menu.help": "\nНомер: играть  |  s: стоп  |  k слово: поиск  |  q: закрыть",
   "menu.no_results": "Нет результатов.",
   "menu.pick_result": "Номер результата (Enter=отмена): ",
-  "menu.unknown": "Неизвестный ввод."
+  "menu.unknown": "Неизвестный ввод.",
+  "menu.pick_result_add": "Номер результата = играть, a номер = сохранить в config.json (Enter=отмена): ",
+  "msg.saved": "Сохранено: {name}",
+  "msg.exists": "Уже сохранено: {name}",
+  "msg.step_none": "Нет станции для перехода."
 }

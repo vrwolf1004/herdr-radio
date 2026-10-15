@@ -16,5 +16,9 @@
   "menu.help": "\nNummer: abspielen  |  s: stoppen  |  k Stichwort: suchen  |  q: schließen",
   "menu.no_results": "Keine Ergebnisse.",
   "menu.pick_result": "Ergebnisnummer (Enter=abbrechen): ",
-  "menu.unknown": "Unbekannte Eingabe."
+  "menu.unknown": "Unbekannte Eingabe.",
+  "menu.pick_result_add": "Ergebnisnummer = abspielen, a Nummer = in config.json speichern (Enter=abbrechen): ",
+  "msg.saved": "Gespeichert: {name}",
+  "msg.exists": "Bereits gespeichert: {name}",
+  "msg.step_none": "Kein Sender zum Wechseln."
 }

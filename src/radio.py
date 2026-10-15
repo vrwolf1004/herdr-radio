@@ -594,6 +594,48 @@ def play_and_report(args, station):
     return True
 
 
+def save_station(station):
+    """검색한 방송을 config.json 의 stations 에 추가한다. 이미 있으면 False."""
+    os.makedirs(config_dir_path(), exist_ok=True)
+    path = os.path.join(config_dir_path(), "config.json")
+    try:
+        with open(path, encoding="utf-8") as file:
+            data = json.load(file)
+    except (OSError, ValueError):
+        data = {}
+    if not isinstance(data, dict) or not isinstance(data.get("stations"), list):
+        data = {"stations": []}
+    if any(isinstance(item, dict) and item.get("url") == station["url"] for item in data["stations"]):
+        return False
+    data["stations"].append({"name": station["name"], "url": station["url"]})
+    with open(path, "w", encoding="utf-8") as file:
+        json.dump(data, file, ensure_ascii=False, indent=2)
+    return True
+
+
+def cmd_step(args, delta):
+    """config.json 목록에서 지금 방송의 다음(delta=1) 또는 이전(delta=-1) 방송을 튼다."""
+    stations = load_stations()
+    if not stations:
+        print(i18n.t("msg.step_none"))
+        return 1
+    current = last_station(State(args.state))
+    urls = [s["url"] for s in stations]
+    if current and current.get("url") in urls:
+        index = (urls.index(current["url"]) + delta) % len(stations)
+    else:
+        index = 0 if delta > 0 else len(stations) - 1
+    return 0 if play_and_report(args, stations[index]) else 1
+
+
+def cmd_next(args):
+    return cmd_step(args, 1)
+
+
+def cmd_prev(args):
+    return cmd_step(args, -1)
+
+
 def cmd_play(args):
     """config.json 의 N번째 방송을 재생한다. 방송국별 액션이 이 명령을 부른다."""
     stations = load_stations()
@@ -638,7 +680,14 @@ def menu(args):
                 print(i18n.t("menu.no_results"))
                 continue
             print_stations(options)
-            picked = input(i18n.t("menu.pick_result")).strip()
+            picked = input(i18n.t("menu.pick_result_add")).strip().lower()
+            if picked.startswith("a ") and picked[2:].strip().isdigit():
+                number = int(picked[2:].strip())
+                if 1 <= number <= len(options):
+                    station = options[number - 1]
+                    saved = save_station(station)
+                    print(i18n.t("msg.saved" if saved else "msg.exists", name=station["name"]))
+                continue
             if picked.isdigit() and 1 <= int(picked) <= len(options):
                 play_and_report(args, options[int(picked) - 1])
             continue
@@ -659,7 +708,7 @@ def safe_menu(args):
 def build_parser():
     parser = argparse.ArgumentParser(prog="radio.py")
     parser.add_argument("command", nargs="?", default="menu",
-                        choices=["ensure", "host", "start", "stop", "menu", "status", "play"])
+                        choices=["ensure", "host", "start", "stop", "menu", "status", "play", "next", "prev"])
     parser.add_argument("index", nargs="?", type=int, default=0)
     parser.add_argument("--state", default=state_dir_path())
     parser.add_argument("--config", default=os.environ.get("HERDR_PLUGIN_CONFIG_DIR") or "")
@@ -680,6 +729,8 @@ def main(argv=None):
         "menu": safe_menu,
         "status": cmd_status,
         "play": cmd_play,
+        "next": cmd_next,
+        "prev": cmd_prev,
     }
     return commands[args.command](args)
 

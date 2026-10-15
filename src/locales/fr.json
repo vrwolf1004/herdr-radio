@@ -16,5 +16,9 @@
   "menu.help": "\nNuméro : lire  |  s : stop  |  k mot-clé : chercher  |  q : fermer",
   "menu.no_results": "Aucun résultat.",
   "menu.pick_result": "N° du résultat (Entrée=annuler) : ",
-  "menu.unknown": "Saisie inconnue."
+  "menu.unknown": "Saisie inconnue.",
+  "menu.pick_result_add": "N° du résultat = lire, a N° = enregistrer dans config.json (Entrée=annuler) : ",
+  "msg.saved": "Enregistré : {name}",
+  "msg.exists": "Déjà enregistrée : {name}",
+  "msg.step_none": "Aucune station vers laquelle passer."
 }

@@ -169,3 +169,31 @@ title = "radio: station 6 (config.json order)"
 platforms = ["linux", "macos"]
 contexts = ["global"]
 command = ["python3", "-X", "utf8", "src/radio.py", "play", "6"]
+
+[[actions]]
+id = "next-windows"
+title = "radio: next station"
+platforms = ["windows"]
+contexts = ["global"]
+command = ["python", "-X", "utf8", "src/radio.py", "next"]
+
+[[actions]]
+id = "next"
+title = "radio: next station"
+platforms = ["linux", "macos"]
+contexts = ["global"]
+command = ["python3", "-X", "utf8", "src/radio.py", "next"]
+
+[[actions]]
+id = "prev-windows"
+title = "radio: previous station"
+platforms = ["windows"]
+contexts = ["global"]
+command = ["python", "-X", "utf8", "src/radio.py", "prev"]
+
+[[actions]]
+id = "prev"
+title = "radio: previous station"
+platforms = ["linux", "macos"]
+contexts = ["global"]
+command = ["python3", "-X", "utf8", "src/radio.py", "prev"]
