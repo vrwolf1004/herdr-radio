@@ -359,18 +359,21 @@ def host_command(state_dir, config_dir, pane_id):
     return command
 
 
-def start_detached(command):
-    """host 를 pane 밖의 분리 프로세스로 띄운다. dock pane 은 목록(menu)이 쓴다."""
+def start_detached(state_dir, command):
+    """host 를 pane 밖의 분리 프로세스로 띄운다. dock pane 은 목록(menu)이 쓴다.
+
+    콘솔 창은 만들지 않고, 오류는 host.log 에 남긴다 (DEVNULL 이면 죽은 이유를 알 수 없다)."""
     kwargs = {}
     if os.name == "nt":
-        kwargs["creationflags"] = subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP
+        kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW | subprocess.CREATE_NEW_PROCESS_GROUP
     else:
         kwargs["start_new_session"] = True
+    log = open(os.path.join(state_dir, "host.log"), "a", encoding="utf-8")
     subprocess.Popen(
         command,
         stdin=subprocess.DEVNULL,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
+        stdout=log,
+        stderr=log,
         **kwargs,
     )
 
@@ -381,7 +384,7 @@ def cmd_ensure(args):
         return 0
     _, pane_id = ensure_workspace(state)
     # 사이드바 토큰과 agent 등록을 맡는 host 는 pane 밖에서 돈다.
-    start_detached(host_command(args.state, args.config, pane_id))
+    start_detached(args.state, host_command(args.state, args.config, pane_id))
     # dock pane 에는 방송국 목록을 띄운다. 번호를 치면 바로 재생된다.
     herdr_api.cli("pane", "run", pane_id, *menu_command(args.state, args.config))
     return 0
