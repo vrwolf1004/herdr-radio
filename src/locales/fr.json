@@ -21,5 +21,6 @@
   "msg.saved": "Enregistré : {name}",
   "msg.exists": "Déjà enregistrée : {name}",
   "msg.step_none": "Aucune station vers laquelle passer.",
-  "token.failed": "✖ échec"
+  "token.failed": "✖ échec",
+  "msg.volume_fail": "Impossible de changer le volume : mpv ne lit rien. (Le volume n'est géré que par mpv)"
 }

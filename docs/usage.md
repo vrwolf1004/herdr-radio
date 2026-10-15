@@ -86,6 +86,8 @@ dock의 radio pane에는 방송국 목록(메뉴)이 떠 있습니다. 상태를
 | `play-N-windows` | `play-N` | `config.json`의 N번째 방송(1~6)을 바로 틉니다 |
 | `next-windows` | `next` | `config.json` 목록에서 지금 방송의 다음 방송을 틉니다. 끝에 오면 처음으로 돌아갑니다 |
 | `prev-windows` | `prev` | 이전 방송을 틉니다. 처음에 오면 끝으로 돌아갑니다 |
+| `volume-up-windows` | `volume-up` | 재생 중인 mpv의 볼륨을 5 올립니다 (mpv 전용) |
+| `volume-down-windows` | `volume-down` | 재생 중인 mpv의 볼륨을 5 내립니다 (mpv 전용) |
 
 실행 예:
 

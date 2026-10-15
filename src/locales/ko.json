@@ -21,5 +21,6 @@
   "msg.saved": "저장했습니다: {name}",
   "msg.exists": "이미 저장된 방송입니다: {name}",
   "msg.step_none": "이동할 방송이 없습니다.",
-  "token.failed": "✖ 실패"
+  "token.failed": "✖ 실패",
+  "msg.volume_fail": "재생 중인 mpv가 없어서 볼륨을 바꿀 수 없습니다. (볼륨 조절은 mpv에서만 됩니다)"
 }

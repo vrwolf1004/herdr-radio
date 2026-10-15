@@ -21,5 +21,6 @@
   "msg.saved": "Guardada: {name}",
   "msg.exists": "Ya guardada: {name}",
   "msg.step_none": "No hay emisora a la que cambiar.",
-  "token.failed": "✖ error"
+  "token.failed": "✖ error",
+  "msg.volume_fail": "No se puede cambiar el volumen: mpv no está reproduciendo. (El volumen solo funciona con mpv)"
 }

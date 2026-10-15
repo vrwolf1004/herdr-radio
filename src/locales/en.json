@@ -21,5 +21,6 @@
   "msg.saved": "Saved: {name}",
   "msg.exists": "Already saved: {name}",
   "msg.step_none": "No station to move to.",
-  "token.failed": "✖ failed"
+  "token.failed": "✖ failed",
+  "msg.volume_fail": "Cannot change volume: no mpv is playing. (Volume control works with mpv only)"
 }

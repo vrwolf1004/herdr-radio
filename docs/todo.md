@@ -35,7 +35,7 @@
 ## 기능
 
 - [x] **방송국 추가 메뉴 항목**: 검색 결과에서 방송국을 `config.json`에 저장하는 옵션을 둡니다. 지금은 URL을 손으로 옮겨야 합니다.
-- [ ] **볼륨 조절**: mpv는 IPC 소켓이나 `--input-ipc-server`로 볼륨을 바꿀 수 있습니다. 액션 `volume-up`, `volume-down`을 추가합니다. ffplay는 지원하지 않으므로 mpv 전용으로 명시합니다.
+- [x] **볼륨 조절**: mpv는 IPC 소켓이나 `--input-ipc-server`로 볼륨을 바꿀 수 있습니다. 액션 `volume-up`, `volume-down`을 추가합니다. ffplay는 지원하지 않으므로 mpv 전용으로 명시합니다.
 - [x] **재생 실패 감지**: 플레이어가 바로 종료되면 `station.json`은 그대로이고 사이드바에는 `정지`로 보입니다. 실패 이유(스트림 끊김, 404)를 `$rd_state`에 `✖ 실패`처럼 구분해 올립니다.
 - [x] **다음/이전 방송 액션**: `station.json`과 `config.json` 순서를 써서 이동합니다.
 - [ ] **검색 결과 캐시**: 같은 키워드를 여러 번 검색하지 않도록 짧게(예: 10분) 저장합니다.
@@ -43,9 +43,9 @@
 ## 문서, 배포
 
 - [ ] **라이선스 정하기**: README가 "미정"입니다. `herdr_api.py`가 MIT 코드를 가져왔으므로 MIT 등 호환되는 라이선스를 정하고 `LICENSE` 파일을 추가합니다.
-- [ ] **`.gitattributes` 추가**: 커밋마다 줄바꿈 경고가 납니다. `* text=auto eol=lf`를 넣습니다. feedbag 저장소의 같은 항목과 맞춥니다.
-- [ ] **버전 올리기**: 0.2.0입니다. 위 버그를 고치면 0.3.0으로 올립니다.
-- [ ] **README에 `docs/` 링크 추가**: 설치 방법은 README, 설정과 사용법은 `docs/usage.md`로 나눕니다.
+- [x] **`.gitattributes` 추가**: 커밋마다 줄바꿈 경고가 납니다. `* text=auto eol=lf`를 넣습니다. feedbag 저장소의 같은 항목과 맞춥니다.
+- [x] **버전 올리기**: 0.2.0입니다. 위 버그를 고치면 0.3.0으로 올립니다.
+- [x] **README에 `docs/` 링크 추가**: 설치 방법은 README, 설정과 사용법은 `docs/usage.md`로 나눕니다.
 - [ ] **GitHub 저장소 설정**: topic `herdr-plugin`과 설명을 넣습니다.
 
 ## 공용 dock (herdr-dock)

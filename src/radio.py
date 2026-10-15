@@ -302,6 +302,56 @@ def stop(state):
     return bool(pids)
 
 
+def ipc_address(state):
+    """mpv IPC 주소. Windows 는 이름 있는 파이프, 그 밖은 상태 폴더의 소켓 파일."""
+    if os.name == "nt":
+        return r"\\.\pipe\herdr-radio-mpv"
+    return state.path("mpv.sock")
+
+
+def send_mpv(state, command):
+    """mpv 에 JSON 명령을 보내고 응답을 돌려준다. 실행 중인 mpv 가 없으면 None."""
+    message = (json.dumps({"command": command}) + "\n").encode("utf-8")
+    address = ipc_address(state)
+    try:
+        if os.name == "nt":
+            with open(address, "r+b", buffering=0) as pipe:
+                pipe.write(message)
+                return json.loads(pipe.readline().decode("utf-8") or "{}")
+        import socket
+        client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        client.settimeout(2)
+        try:
+            client.connect(address)
+            client.sendall(message)
+            return json.loads(client.makefile("rb").readline().decode("utf-8") or "{}")
+        finally:
+            client.close()
+    except (OSError, ValueError):
+        return None
+
+
+def cmd_volume(args, delta):
+    """재생 중인 mpv 의 볼륨을 delta 만큼 바꾼다."""
+    state = State(args.state)
+    response = send_mpv(state, ["add", "volume", delta])
+    if response is None or response.get("error") not in (None, "success"):
+        print(i18n.t("msg.volume_fail"))
+        return 1
+    level = send_mpv(state, ["get_property", "volume"])
+    if level and level.get("data") is not None:
+        print(f"volume: {int(level['data'])}")
+    return 0
+
+
+def cmd_volume_up(args):
+    return cmd_volume(args, 5)
+
+
+def cmd_volume_down(args):
+    return cmd_volume(args, -5)
+
+
 def play(state, station):
     # 이전 재생이 있으면 먼저 끊는다.
     stop(state)
@@ -310,7 +360,9 @@ def play(state, station):
         raise RuntimeError(i18n.t("error.no_player"))
     if name == "mpv":
         # network-timeout: 연결이 실패하면 몇 초 뒤 종료해서 실패를 감지할 수 있게 한다
-        args = [path, "--no-video", "--no-terminal", "--really-quiet", "--network-timeout=5", PLAYER_TITLE_ARG, station["url"]]
+        # input-ipc-server: 볼륨 같은 명령을 소켓으로 받는다 (mpv 전용)
+        args = [path, "--no-video", "--no-terminal", "--really-quiet", "--network-timeout=5",
+                f"--input-ipc-server={ipc_address(state)}", PLAYER_TITLE_ARG, station["url"]]
     else:
         args = [path, "-nodisp", "-loglevel", "quiet", "-window_title", PLAYER_MARKER, station["url"]]
 
@@ -719,7 +771,7 @@ def safe_menu(args):
 def build_parser():
     parser = argparse.ArgumentParser(prog="radio.py")
     parser.add_argument("command", nargs="?", default="menu",
-                        choices=["ensure", "host", "start", "stop", "menu", "status", "play", "next", "prev"])
+                        choices=["ensure", "host", "start", "stop", "menu", "status", "play", "next", "prev", "volume-up", "volume-down"])
     parser.add_argument("index", nargs="?", type=int, default=0)
     parser.add_argument("--state", default=state_dir_path())
     parser.add_argument("--config", default=os.environ.get("HERDR_PLUGIN_CONFIG_DIR") or "")
@@ -741,6 +793,8 @@ def main(argv=None):
         "status": cmd_status,
         "play": cmd_play,
         "next": cmd_next,
+        "volume-up": cmd_volume_up,
+        "volume-down": cmd_volume_down,
         "prev": cmd_prev,
     }
     return commands[args.command](args)

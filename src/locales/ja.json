@@ -21,5 +21,6 @@
   "msg.saved": "保存しました: {name}",
   "msg.exists": "すでに保存されています: {name}",
   "msg.step_none": "移動先の放送局がありません。",
-  "token.failed": "✖ 失敗"
+  "token.failed": "✖ 失敗",
+  "msg.volume_fail": "mpv が再生していないため音量を変えられません。(音量調整は mpv のみ対応)"
 }

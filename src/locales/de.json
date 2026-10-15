@@ -21,5 +21,6 @@
   "msg.saved": "Gespeichert: {name}",
   "msg.exists": "Bereits gespeichert: {name}",
   "msg.step_none": "Kein Sender zum Wechseln.",
-  "token.failed": "✖ Fehler"
+  "token.failed": "✖ Fehler",
+  "msg.volume_fail": "Lautstärke kann nicht geändert werden: mpv spielt nichts. (Lautstärke funktioniert nur mit mpv)"
 }

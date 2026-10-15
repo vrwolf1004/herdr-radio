@@ -88,6 +88,8 @@ rows = [
 | `stop` | Stops playback. The block stays and shows `■ stopped` |
 | `menu` | Opens the station pane. Type a keyword to search Radio Browser, or press Enter to see your `config.json` list |
 | `play-1` … `play-6` | Plays the Nth station in `config.json` |
+| `next` / `prev` | Plays the next or previous station in `config.json` |
+| `volume-up` / `volume-down` | Changes the volume of the running mpv by 5 (mpv only) |
 
 On Windows, append `-windows` to each action id:
 
