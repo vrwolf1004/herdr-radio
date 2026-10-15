@@ -351,13 +351,40 @@ def host_command(state_dir, config_dir, pane_id):
     return command
 
 
+def start_detached(command):
+    """host 를 pane 밖의 분리 프로세스로 띄운다. dock pane 은 목록(menu)이 쓴다."""
+    kwargs = {}
+    if os.name == "nt":
+        kwargs["creationflags"] = subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP
+    else:
+        kwargs["start_new_session"] = True
+    subprocess.Popen(
+        command,
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        **kwargs,
+    )
+
+
 def cmd_ensure(args):
     state = State(args.state)
     if state.host_alive():
         return 0
     _, pane_id = ensure_workspace(state)
-    herdr_api.cli("pane", "run", pane_id, *host_command(args.state, args.config, pane_id))
+    # 사이드바 토큰과 agent 등록을 맡는 host 는 pane 밖에서 돈다.
+    start_detached(host_command(args.state, args.config, pane_id))
+    # dock pane 에는 방송국 목록을 띄운다. 번호를 치면 바로 재생된다.
+    herdr_api.cli("pane", "run", pane_id, *menu_command(args.state, args.config))
     return 0
+
+
+def menu_command(state_dir, config_dir):
+    script = os.path.abspath(__file__)
+    command = [sys.executable, "-X", "utf8", script, "menu", "--state", state_dir]
+    if config_dir:
+        command += ["--config", config_dir]
+    return command
 
 
 class Host:
@@ -505,7 +532,9 @@ def menu(args):
         choice = input("> ").strip()
 
         if choice in ("", "q"):
-            return 0
+            # 목록 pane 은 닫히지 않게 다시 그린다. 정지는 s, 종료는 Ctrl+C 또는 pane 닫기.
+            print()
+            continue
         if choice == "s":
             print(i18n.t("msg.stopped") if stop(state) else i18n.t("msg.not_playing"))
             continue
@@ -530,6 +559,14 @@ def menu(args):
         print(i18n.t("menu.unknown"))
 
 
+def safe_menu(args):
+    """Ctrl+C 나 pane 닫기(입력 종료)로 끝날 때 트레이스백 없이 끝낸다."""
+    try:
+        return menu(args)
+    except (KeyboardInterrupt, EOFError):
+        return 0
+
+
 def build_parser():
     parser = argparse.ArgumentParser(prog="radio.py")
     parser.add_argument("command", nargs="?", default="menu",
@@ -548,7 +585,7 @@ def main(argv=None):
         "host": cmd_host,
         "start": cmd_start,
         "stop": cmd_stop,
-        "menu": menu,
+        "menu": safe_menu,
         "status": cmd_status,
         "play": cmd_play,
     }
