@@ -459,48 +459,78 @@ def cmd_status(args):
     return 0
 
 
-def menu(args):
-    state = State(args.state)
-    keyword = input("방송국 이름 검색 (Enter=config.json 목록): ").strip()
-    if keyword:
-        try:
-            options = search(keyword)
-        except RuntimeError as error:
-            print(error)
-            return 1
-    else:
-        options = load_stations()
-    if not options:
-        print("검색 결과가 없습니다.")
-        return 0
-
+def print_stations(options):
     for index, station in enumerate(options, 1):
         country = f" ({station['country']})" if station.get("country") else ""
         print(f"{index:2}. {station['name']}{country}")
 
-    choice = input("번호 선택 (Enter=취소, s=정지): ").strip().lower()
-    if choice == "s":
-        print("정지했습니다." if stop(state) else "재생 중인 방송이 없습니다.")
-        return 0
-    if not choice.isdigit() or not 1 <= int(choice) <= len(options):
-        return 0
 
-    station = options[int(choice) - 1]
+def play_and_report(args, station):
     try:
-        play(state, station)
+        play(State(args.state), station)
     except RuntimeError as error:
         print(error)
-        return 1
-    print(f"재생 중: {station['name']}")
+        return False
     cmd_ensure(args)
-    print("이 pane 을 닫아도 재생은 계속됩니다. 정지는 stop 액션을 쓰세요.")
-    return 0
+    print(f"재생 중: {station['name']}")
+    return True
+
+
+def cmd_play(args):
+    """config.json 의 N번째 방송을 재생한다. 방송국별 액션이 이 명령을 부른다."""
+    stations = load_stations()
+    index = args.index
+    if not 1 <= index <= len(stations):
+        print(f"방송 번호 {index} 가 없습니다. config.json 에 {len(stations)}개가 있습니다.")
+        return 1
+    return 0 if play_and_report(args, stations[index - 1]) else 1
+
+
+def menu(args):
+    """방송국 목록을 보여 주고 번호로 재생한다. 명령:
+    번호 = 재생, s = 정지, k 키워드 = Radio Browser 검색, q = 닫기"""
+    state = State(args.state)
+    while True:
+        stations = load_stations()
+        print("=== 방송국 목록 (config.json) ===")
+        if stations:
+            print_stations(stations)
+        else:
+            print("config.json 에 방송국이 없습니다.")
+        print("\n번호: 재생  |  s: 정지  |  k 키워드: 검색  |  q: 닫기")
+        choice = input("> ").strip()
+
+        if choice in ("", "q"):
+            return 0
+        if choice == "s":
+            print("정지했습니다." if stop(state) else "재생 중인 방송이 없습니다.")
+            continue
+        if choice.startswith("k "):
+            keyword = choice[2:].strip()
+            try:
+                options = search(keyword) if keyword else []
+            except RuntimeError as error:
+                print(error)
+                continue
+            if not options:
+                print("검색 결과가 없습니다.")
+                continue
+            print_stations(options)
+            picked = input("검색 결과 번호 (Enter=취소): ").strip()
+            if picked.isdigit() and 1 <= int(picked) <= len(options):
+                play_and_report(args, options[int(picked) - 1])
+            continue
+        if choice.isdigit() and 1 <= int(choice) <= len(stations):
+            play_and_report(args, stations[int(choice) - 1])
+            continue
+        print("알 수 없는 입력입니다.")
 
 
 def build_parser():
     parser = argparse.ArgumentParser(prog="radio.py")
     parser.add_argument("command", nargs="?", default="menu",
-                        choices=["ensure", "host", "start", "stop", "menu", "status"])
+                        choices=["ensure", "host", "start", "stop", "menu", "status", "play"])
+    parser.add_argument("index", nargs="?", type=int, default=0)
     parser.add_argument("--state", default=state_dir_path())
     parser.add_argument("--config", default=os.environ.get("HERDR_PLUGIN_CONFIG_DIR") or "")
     parser.add_argument("--pane", default=os.environ.get("HERDR_PANE_ID"))
@@ -516,6 +546,7 @@ def main(argv=None):
         "stop": cmd_stop,
         "menu": menu,
         "status": cmd_status,
+        "play": cmd_play,
     }
     return commands[args.command](args)
 

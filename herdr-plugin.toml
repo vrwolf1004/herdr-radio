@@ -85,3 +85,87 @@ title = "radio"
 platforms = ["linux", "macos"]
 placement = "overlay"
 command = ["python3", "-X", "utf8", "src/radio.py", "menu"]
+
+[[actions]]
+id = "play-1-windows"
+title = "radio: station 1 (config.json order)"
+platforms = ["windows"]
+contexts = ["global"]
+command = ["python", "-X", "utf8", "src/radio.py", "play", "1"]
+
+[[actions]]
+id = "play-1"
+title = "radio: station 1 (config.json order)"
+platforms = ["linux", "macos"]
+contexts = ["global"]
+command = ["python3", "-X", "utf8", "src/radio.py", "play", "1"]
+
+[[actions]]
+id = "play-2-windows"
+title = "radio: station 2 (config.json order)"
+platforms = ["windows"]
+contexts = ["global"]
+command = ["python", "-X", "utf8", "src/radio.py", "play", "2"]
+
+[[actions]]
+id = "play-2"
+title = "radio: station 2 (config.json order)"
+platforms = ["linux", "macos"]
+contexts = ["global"]
+command = ["python3", "-X", "utf8", "src/radio.py", "play", "2"]
+
+[[actions]]
+id = "play-3-windows"
+title = "radio: station 3 (config.json order)"
+platforms = ["windows"]
+contexts = ["global"]
+command = ["python", "-X", "utf8", "src/radio.py", "play", "3"]
+
+[[actions]]
+id = "play-3"
+title = "radio: station 3 (config.json order)"
+platforms = ["linux", "macos"]
+contexts = ["global"]
+command = ["python3", "-X", "utf8", "src/radio.py", "play", "3"]
+
+[[actions]]
+id = "play-4-windows"
+title = "radio: station 4 (config.json order)"
+platforms = ["windows"]
+contexts = ["global"]
+command = ["python", "-X", "utf8", "src/radio.py", "play", "4"]
+
+[[actions]]
+id = "play-4"
+title = "radio: station 4 (config.json order)"
+platforms = ["linux", "macos"]
+contexts = ["global"]
+command = ["python3", "-X", "utf8", "src/radio.py", "play", "4"]
+
+[[actions]]
+id = "play-5-windows"
+title = "radio: station 5 (config.json order)"
+platforms = ["windows"]
+contexts = ["global"]
+command = ["python", "-X", "utf8", "src/radio.py", "play", "5"]
+
+[[actions]]
+id = "play-5"
+title = "radio: station 5 (config.json order)"
+platforms = ["linux", "macos"]
+contexts = ["global"]
+command = ["python3", "-X", "utf8", "src/radio.py", "play", "5"]
+
+[[actions]]
+id = "play-6-windows"
+title = "radio: station 6 (config.json order)"
+platforms = ["windows"]
+contexts = ["global"]
+command = ["python", "-X", "utf8", "src/radio.py", "play", "6"]
+
+[[actions]]
+id = "play-6"
+title = "radio: station 6 (config.json order)"
+platforms = ["linux", "macos"]
+contexts = ["global"]
+command = ["python3", "-X", "utf8", "src/radio.py", "play", "6"]
