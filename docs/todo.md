@@ -51,7 +51,8 @@
 ## 공용 dock (herdr-dock)
 
 - [ ] **dock 코드 중복 정리**: `find_workspace`, `ensure_workspace`, `keep_at_bottom`이 feedbag과 거의 같습니다. feedbag의 todo "dock 규칙 정리"와 함께 공용 모듈로 빼는 방안을 검토합니다. 두 플러그인 모두 `herdr_api.py`를 복사해 쓰고 있으므로 같이 정리합니다.
-- [ ] **radio 블록이 맨 아래에 있지 않을 때**: feedbag이 없으면 `keep_at_bottom`만 믿어야 합니다. feedbag todo의 "다른 블록만 있을 때 순서"와 같은 문제입니다.
+- [x] **radio 블록이 맨 아래에 있지 않을 때**: feedbag이 없으면 `keep_at_bottom`만 믿어야 합니다. feedbag todo의 "다른 블록만 있을 때 순서"와 같은 문제입니다.
+  - 처리: radio 워커가 5초마다 `keep_at_bottom`을 호출합니다. dock을 맨 위로 옮긴 뒤 8초 만에 맨 아래로 돌아오는 것을 확인했습니다.
 
 ## 테스트
 
