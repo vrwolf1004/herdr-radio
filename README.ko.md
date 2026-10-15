@@ -37,7 +37,7 @@
 herdr plugin install vrwolf1004/herdr-radio --yes
 ```
 
-설치 후 방송국을 몇 개 등록하고, herdr `config.toml`에 radio 줄을 추가하세요. [사용법](docs/usage.md)을 참고하세요.
+설치 후 방송국을 몇 개 등록하고, herdr `config.toml`에 radio 줄을 추가하세요. [사용법](docs/usage.md) (영문: [usage.en.md](docs/usage.en.md))을 참고하세요.
 
 로컬 사본으로 개발하려면 다음과 같이 연결합니다.
 
@@ -121,10 +121,11 @@ herdr plugin action invoke start --plugin herdr-radio           # linux / macos
 ## 문서
 
 - [사용법 (한국어)](docs/usage.md)
-- [구조 및 동작 방식](docs/architecture.md)
-- [TODO](docs/todo.md)
+- [Usage guide (English)](docs/usage.en.md)
+- [구조 및 동작 방식 (한국어)](docs/architecture.md)
+- [TODO (한국어)](docs/todo.md)
 
-영어 문서는 [사용법 (English)](docs/usage.md)과 [README.md](README.md)에 있습니다.
+영어 README는 [README.md](README.md)에 있습니다.
 
 ## 라이선스
 

@@ -32,10 +32,10 @@ Number: play  |  s: stop  |  k keyword: search  |  q: close
 ## Install
 
 ```sh
-herdr plugin install vrwolf1004/herdr-radio
+herdr plugin install vrwolf1004/herdr-radio --yes
 ```
 
-Then save a few stations and add the radio rows to herdr's `config.toml`. See the [usage guide](docs/usage.md).
+Then save a few stations and add the radio rows to herdr's `config.toml`. See the [usage guide](docs/usage.en.md).
 
 To develop from a local copy:
 
@@ -113,14 +113,17 @@ The menu and sidebar text follow the first match in this list:
 - Each stream has its own terms of use. Use it for personal listening.
 - Stream addresses change often. If a station stops working, search for it again in `menu`.
 - Closing the pane does not stop playback. Use the `stop` action to turn it off.
+- In `menu`, `a number` saves a search result to `config.json`.
+- A stream that ends without a stop shows `✖ failed` in the sidebar until you stop or start playback again.
 
 ## Documentation
 
-- [Usage guide (English)](docs/usage.md)
-- [Architecture](docs/architecture.md)
-- [TODO](docs/todo.md)
+- [Usage guide (English)](docs/usage.en.md)
+- [사용법 (Korean usage guide)](docs/usage.md)
+- [Architecture (Korean)](docs/architecture.md)
+- [TODO (Korean)](docs/todo.md)
 
-Korean documents are in the same `docs/` folder. The Korean README is [README.ko.md](README.ko.md).
+The Korean README is [README.ko.md](README.ko.md).
 
 ## License
 
