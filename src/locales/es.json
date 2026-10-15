@@ -20,5 +20,6 @@
   "menu.pick_result_add": "Número del resultado = reproducir, a número = guardar en config.json (Enter=cancelar): ",
   "msg.saved": "Guardada: {name}",
   "msg.exists": "Ya guardada: {name}",
-  "msg.step_none": "No hay emisora a la que cambiar."
+  "msg.step_none": "No hay emisora a la que cambiar.",
+  "token.failed": "✖ error"
 }

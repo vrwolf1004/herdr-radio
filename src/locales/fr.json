@@ -20,5 +20,6 @@
   "menu.pick_result_add": "N° du résultat = lire, a N° = enregistrer dans config.json (Entrée=annuler) : ",
   "msg.saved": "Enregistré : {name}",
   "msg.exists": "Déjà enregistrée : {name}",
-  "msg.step_none": "Aucune station vers laquelle passer."
+  "msg.step_none": "Aucune station vers laquelle passer.",
+  "token.failed": "✖ échec"
 }

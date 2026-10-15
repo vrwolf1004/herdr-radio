@@ -20,5 +20,6 @@
   "menu.pick_result_add": "Result number = play, a number = save to config.json (Enter=cancel): ",
   "msg.saved": "Saved: {name}",
   "msg.exists": "Already saved: {name}",
-  "msg.step_none": "No station to move to."
+  "msg.step_none": "No station to move to.",
+  "token.failed": "✖ failed"
 }

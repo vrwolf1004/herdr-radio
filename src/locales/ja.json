@@ -20,5 +20,6 @@
   "menu.pick_result_add": "検索結果の番号 = 再生, a 番号 = config.json に保存 (Enter=キャンセル): ",
   "msg.saved": "保存しました: {name}",
   "msg.exists": "すでに保存されています: {name}",
-  "msg.step_none": "移動先の放送局がありません。"
+  "msg.step_none": "移動先の放送局がありません。",
+  "token.failed": "✖ 失敗"
 }

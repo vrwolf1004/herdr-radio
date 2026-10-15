@@ -20,5 +20,6 @@
   "menu.pick_result_add": "검색 결과 번호 = 재생, a 번호 = config.json 에 저장 (Enter=취소): ",
   "msg.saved": "저장했습니다: {name}",
   "msg.exists": "이미 저장된 방송입니다: {name}",
-  "msg.step_none": "이동할 방송이 없습니다."
+  "msg.step_none": "이동할 방송이 없습니다.",
+  "token.failed": "✖ 실패"
 }

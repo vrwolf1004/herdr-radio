@@ -20,5 +20,6 @@
   "menu.pick_result_add": "Ergebnisnummer = abspielen, a Nummer = in config.json speichern (Enter=abbrechen): ",
   "msg.saved": "Gespeichert: {name}",
   "msg.exists": "Bereits gespeichert: {name}",
-  "msg.step_none": "Kein Sender zum Wechseln."
+  "msg.step_none": "Kein Sender zum Wechseln.",
+  "token.failed": "✖ Fehler"
 }

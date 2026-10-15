@@ -273,6 +273,8 @@ def is_playing(state):
         if process_alive(int(raw)):
             return True
         state.remove("player.pid")  # 끝난 플레이어의 기록은 지운다
+        if state.read("last_end") == "playing":
+            state.write("last_end", "failed")  # 정지 없이 끝났다 = 스트림 끊김이나 연결 실패
     now = time.time()
     if now - _scan_cache["at"] < SCAN_INTERVAL_SECONDS:
         return _scan_cache["playing"]
@@ -282,6 +284,7 @@ def is_playing(state):
 
 def stop(state):
     _scan_cache.update(at=0.0, playing=False)  # 정지 직후 예전 결과가 남지 않게 한다
+    state.write("last_end", "stopped")
     pids = set(player_pids())
     raw = state.read("player.pid")
     if raw and raw.isdigit():
@@ -306,7 +309,8 @@ def play(state, station):
     if not path:
         raise RuntimeError(i18n.t("error.no_player"))
     if name == "mpv":
-        args = [path, "--no-video", "--no-terminal", "--really-quiet", PLAYER_TITLE_ARG, station["url"]]
+        # network-timeout: 연결이 실패하면 몇 초 뒤 종료해서 실패를 감지할 수 있게 한다
+        args = [path, "--no-video", "--no-terminal", "--really-quiet", "--network-timeout=5", PLAYER_TITLE_ARG, station["url"]]
     else:
         args = [path, "-nodisp", "-loglevel", "quiet", "-window_title", PLAYER_MARKER, station["url"]]
 
@@ -327,6 +331,7 @@ def play(state, station):
     state.write("player.pid", str(proc.pid))
     # 마지막 방송을 기억해 두면 start 액션이 같은 방송을 다시 튼다.
     state.write("station.json", json.dumps({"name": station["name"], "url": station["url"]}, ensure_ascii=False))
+    state.write("last_end", "playing")
     return proc.pid
 
 
@@ -464,25 +469,31 @@ class Host:
         self.socket_failures = 0
         self.playing = False
         self.station = None
+        self.failed = False
         self.lock = threading.Lock()
         self.stopping = threading.Event()
 
     def refresh_status(self):
         playing = is_playing(self.state)
         station = last_station(self.state)
+        failed = self.state.read("last_end") == "failed"
         with self.lock:
             self.playing = playing
             self.station = station
+            self.failed = failed
 
     def snapshot(self):
         with self.lock:
-            return self.playing, self.station
+            return self.playing, self.station, self.failed
 
     def report(self):
-        playing, station = self.snapshot()
+        playing, station, failed = self.snapshot()
         if playing and station:
             now = short_name(station["name"])
             tokens = {"rd_now": now, "rd_state": i18n.t("token.playing")}
+        elif failed and station:
+            # 재생이 실패했을 때는 방송 이름과 함께 실패를 보여 준다
+            tokens = {"rd_now": short_name(station["name"]), "rd_state": i18n.t("token.failed")}
         else:
             tokens = {"rd_now": "-", "rd_state": i18n.t("token.stopped")}
         ok = herdr_api.try_request("pane.report_metadata", {
@@ -495,7 +506,7 @@ class Host:
         self.socket_failures = 0 if ok else self.socket_failures + 1
 
     def register_agent(self):
-        playing, _ = self.snapshot()
+        playing, _, _ = self.snapshot()
         herdr_api.try_request("pane.report_agent", {
             "pane_id": self.pane_id,
             "source": SOURCE,

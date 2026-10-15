@@ -62,6 +62,7 @@ rows = [
 feedbag을 함께 쓰면 두 블록이 같은 `herdr-dock`에 모입니다. `$fb_*` 줄도 같은 `rows`에 넣으세요. 넣은 뒤에는 `herdr server reload-config`를 실행합니다.
 
 - `$rd_*` 토큰은 radio 블록에만 보고되므로 다른 agent 행에는 나오지 않습니다.
+- 재생이 정지 없이 끝나면(연결 실패, 스트림 끊김) 블록에 `✖ 실패`와 방송 이름이 나옵니다. 정지하거나 다시 틀면 사라집니다.
 - 맨 아래 고정은 feedbag이 담당합니다. feedbag이 없으면 radio 블록이 맨 아래에 있다는 보장이 없습니다.
 - `ui.agent_panel_sort`는 기본값 `"spaces"`로 둡니다.
 
