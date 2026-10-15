@@ -38,10 +38,10 @@ id = "menu-windows"
 title = "radio: search and choose station"
 platforms = ["windows"]
 contexts = ["global"]
-command = ["herdr", "plugin", "pane", "open", "--plugin", "herdr-radio", "--entrypoint", "menu"]
+command = ["herdr", "plugin", "pane", "open", "--plugin", "herdr-radio", "--entrypoint", "menu-windows"]
 
 [[panes]]
-id = "menu"
+id = "menu-windows"
 title = "radio"
 platforms = ["windows"]
 placement = "overlay"
