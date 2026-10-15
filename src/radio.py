@@ -170,11 +170,21 @@ def search(keyword, limit=10):
 # ---------------------------------------------------------------- 재생
 
 
+# herdr 가 띄운 프로세스는 PATH 를 바꾸기 전 환경을 물려받을 수 있으므로 알려진 설치 위치도 본다.
+KNOWN_PLAYER_PATHS = [
+    r"C:\Program Files\MPV Player\mpv.exe",
+    r"C:\Program Files\mpv\mpv.exe",
+]
+
+
 def find_player():
     for exe in ("mpv", "ffplay"):
         path = shutil.which(exe)
         if path:
             return exe, path
+    for path in KNOWN_PLAYER_PATHS:
+        if os.path.exists(path):
+            return "mpv", path
     return None, None
 
 
