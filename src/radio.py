@@ -123,11 +123,19 @@ def load_stations():
             data = json.load(file)
     except (OSError, ValueError):
         return []
+    # 형식이 틀린 부분(목록이 아닌 stations, 문자열 항목 등)은 건너뛰고 나머지만 쓴다.
+    if not isinstance(data, dict) or not isinstance(data.get("stations"), list):
+        return []
     stations = []
-    for item in data.get("stations", []):
-        url = (item.get("url") or "").strip()
-        if url:
-            stations.append({"name": (item.get("name") or url).strip(), "url": url, "country": ""})
+    for item in data["stations"]:
+        if not isinstance(item, dict):
+            continue
+        url = item.get("url")
+        if not isinstance(url, str) or not url.strip():
+            continue
+        name = item.get("name")
+        name = name.strip() if isinstance(name, str) and name.strip() else url.strip()
+        stations.append({"name": name, "url": url.strip(), "country": ""})
     return stations
 
 
@@ -145,7 +153,7 @@ def api_get(path, params):
         try:
             with urllib.request.urlopen(req, timeout=10) as resp:
                 return json.load(resp)
-        except OSError as error:
+        except (OSError, ValueError) as error:  # ValueError: 응답이 JSON 이 아닐 때
             last_error = error
     raise RuntimeError(i18n.t("error.radio_browser", detail=last_error))
 
@@ -198,6 +206,7 @@ def find_player():
 
 
 PLAYER_MARKER = "herdr-radio"  # 플레이어 창 제목. 명령줄에 들어가서 프로세스를 찾는 표식이 된다.
+PLAYER_TITLE_ARG = f"--title={PLAYER_MARKER}"  # mpv 인자 형식 (host 명령줄에는 없다)
 
 
 def player_pids():
@@ -205,10 +214,11 @@ def player_pids():
 
     pid 파일은 상태 폴더가 어긋나면 사라질 수 있으므로, 명령줄의 마커로 직접 찾는다.
     """
+    # 플레이어 인자에만 있는 표식으로 찾는다. host 명령줄의 "herdr-radio" 경로와는 겹치지 않는다.
     if os.name == "nt":
         script = (
             "Get-CimInstance Win32_Process -Filter \"Name='mpv.exe' OR Name='ffplay.exe'\" | "
-            f"Where-Object {{ $_.CommandLine -like '*{PLAYER_MARKER}*' }} | "
+            f"Where-Object {{ $_.CommandLine -like '*{PLAYER_TITLE_ARG}*' -or $_.CommandLine -like '*-window_title {PLAYER_MARKER}*' }} | "
             "ForEach-Object { $_.ProcessId }"
         )
         out = subprocess.run(
@@ -216,8 +226,11 @@ def player_pids():
             capture_output=True, **NO_WINDOW, text=True,
         ).stdout
         return [int(line) for line in out.split() if line.isdigit()]
-    out = subprocess.run(["pgrep", "-f", PLAYER_MARKER], capture_output=True, **NO_WINDOW, text=True).stdout
-    return [int(line) for line in out.split() if line.isdigit() and int(line) != os.getpid()]
+    found = []
+    for pattern in (PLAYER_TITLE_ARG, f"-window_title {PLAYER_MARKER}"):
+        out = subprocess.run(["pgrep", "-f", pattern], capture_output=True, text=True).stdout
+        found += [int(line) for line in out.split() if line.isdigit()]
+    return [pid for pid in set(found) if pid != os.getpid()]
 
 
 def is_playing(state):
@@ -252,7 +265,7 @@ def play(state, station):
     if not path:
         raise RuntimeError(i18n.t("error.no_player"))
     if name == "mpv":
-        args = [path, "--no-video", "--no-terminal", "--really-quiet", f"--title={PLAYER_MARKER}", station["url"]]
+        args = [path, "--no-video", "--no-terminal", "--really-quiet", PLAYER_TITLE_ARG, station["url"]]
     else:
         args = [path, "-nodisp", "-loglevel", "quiet", "-window_title", PLAYER_MARKER, station["url"]]
 

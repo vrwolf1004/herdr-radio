@@ -4,18 +4,18 @@
 
 ## 버그 (확인 필요)
 
-- [ ] **Linux/macOS에서 host를 재생 중으로 오인할 수 있음**
+- [x] **Linux/macOS에서 host를 재생 중으로 오인할 수 있음**
   - `is_playing`과 `stop`이 `pgrep -f herdr-radio`를 씁니다.
   - host 프로세스의 명령줄에는 `--state .../herdr/plugins/herdr-radio`가 들어 있어서 매치될 수 있습니다.
   - 결과: 재생하지 않아도 `▶ 재생 중`으로 보이고, `stop`이 host 프로세스에 SIGTERM을 보내 블록이 사라질 수 있습니다.
   - 고칠 방향: 플레이어 이름(`mpv`, `ffplay`)으로 먼저 거르고, 마커는 `--title`처럼 플레이어 인자에만 씁니다. Windows 쪽 필터와 맞춥니다.
   - 확인 방법: Linux 또는 macOS에서 `start` 후 `stop`을 실행해 host가 살아 있는지 봅니다.
 
-- [ ] **검색 응답 오류가 메뉴를 멈춤**
+- [x] **검색 응답 오류가 메뉴를 멈춤**
   - `api_get`은 `OSError`만 잡습니다. 응답이 JSON이 아니면 `json.load`가 `ValueError`를 던지고, `menu`의 `RuntimeError` 처리에 걸리지 않아 pane이 종료됩니다.
   - 고칠 방향: `ValueError`도 잡아 다음 서버로 넘기거나 `RuntimeError`로 바꿉니다.
 
-- [ ] **config.json 형식 오류에 약함**
+- [x] **config.json 형식 오류에 약함**
   - `load_stations`는 `item.get`을 가정합니다. 항목이 문자열이거나 `stations`가 목록이 아니면 예외가 납니다.
   - 고칠 방향: 타입을 확인하고, 잘못된 항목은 건너뛰면서 `menu`에 경고를 한 줄 보여 줍니다.
 
