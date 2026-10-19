@@ -25,5 +25,5 @@
   "menu.genres_title": "=== Géneros ===",
   "menu.my_stations": "Mis emisoras (config.json, {count})",
   "menu.genre_help": "\nNúmero: reproducir  |  b: atrás  |  s: detener",
-  "menu.genre_help_save": "\nNúmero: reproducir  |  a número: guardar en config.json  |  b: atrás  |  s: detener"
+  "menu.genre_help_save": "\nNúmero: reproducir  |  b: atrás  |  s: detener\na número: guardar en config.json"
 }

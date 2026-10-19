@@ -25,5 +25,5 @@
   "menu.genres_title": "=== Genres ===",
   "menu.my_stations": "Meine Sender (config.json, {count})",
   "menu.genre_help": "\nNummer: abspielen  |  b: zurück  |  s: stoppen",
-  "menu.genre_help_save": "\nNummer: abspielen  |  a Nummer: in config.json speichern  |  b: zurück  |  s: stoppen"
+  "menu.genre_help_save": "\nNummer: abspielen  |  b: zurück  |  s: stoppen\na Nummer: in config.json speichern"
 }

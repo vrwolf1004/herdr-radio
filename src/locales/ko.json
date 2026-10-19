@@ -25,5 +25,5 @@
   "menu.genres_title": "=== 장르 ===",
   "menu.my_stations": "내 방송국 (config.json, {count})",
   "menu.genre_help": "\n번호: 재생  |  b: 뒤로  |  s: 정지",
-  "menu.genre_help_save": "\n번호: 재생  |  a 번호: config.json 에 저장  |  b: 뒤로  |  s: 정지"
+  "menu.genre_help_save": "\n번호: 재생  |  b: 뒤로  |  s: 정지\na 번호: config.json 에 저장"
 }

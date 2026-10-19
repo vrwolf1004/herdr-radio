@@ -25,5 +25,5 @@
   "menu.genres_title": "=== Genres ===",
   "menu.my_stations": "Mes stations (config.json, {count})",
   "menu.genre_help": "\nNuméro : lire  |  b : retour  |  s : stop",
-  "menu.genre_help_save": "\nNuméro : lire  |  a numéro : enregistrer dans config.json  |  b : retour  |  s : stop"
+  "menu.genre_help_save": "\nNuméro : lire  |  b : retour  |  s : stop\na numéro : enregistrer dans config.json"
 }

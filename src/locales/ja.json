@@ -25,5 +25,5 @@
   "menu.genres_title": "=== ジャンル ===",
   "menu.my_stations": "マイ放送局 (config.json, {count})",
   "menu.genre_help": "\n番号: 再生  |  b: 戻る  |  s: 停止",
-  "menu.genre_help_save": "\n番号: 再生  |  a 番号: config.json に保存  |  b: 戻る  |  s: 停止"
+  "menu.genre_help_save": "\n番号: 再生  |  b: 戻る  |  s: 停止\na 番号: config.json に保存"
 }

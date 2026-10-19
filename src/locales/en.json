@@ -25,5 +25,5 @@
   "menu.genres_title": "=== Genres ===",
   "menu.my_stations": "My stations (config.json, {count})",
   "menu.genre_help": "\nNumber: play  |  b: back  |  s: stop",
-  "menu.genre_help_save": "\nNumber: play  |  a number: save to config.json  |  b: back  |  s: stop"
+  "menu.genre_help_save": "\nNumber: play  |  b: back  |  s: stop\na number: save to config.json"
 }

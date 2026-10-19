@@ -847,16 +847,21 @@ def pick_station(args, options, picked, can_save=True):
 
 
 def station_menu(args, title, options, can_save):
-    """한 장르(또는 config.json)의 방송 목록. b 나 빈 입력이면 장르 목록으로 돌아간다."""
+    """한 장르(또는 config.json)의 방송 목록. 위에 카세트가 돌고, b 나 빈 입력이면 장르 목록으로 돌아간다."""
     state = State(args.state)
     while True:
-        clear_screen()
-        panel(
-            [f"=== {title} ==="],
-            station_lines(options),
-            [i18n.t("menu.genre_help_save" if can_save else "menu.genre_help").strip()],
-        )
-        choice = input("> ").strip()
+        def draw(frame, typed):
+            sys.stdout.write("\x1b[H")
+            panel(
+                cassette_lines(frame, is_playing(state)),
+                [f"=== {title} ==="],
+                station_lines(options),
+                [i18n.t("menu.genre_help_save" if can_save else "menu.genre_help").strip()],
+            )
+            sys.stdout.write("\x1b[J> " + typed)
+            sys.stdout.flush()
+
+        choice = read_line_animated(draw)
         if choice in ("", "b"):
             return
         if choice == "s":
@@ -866,27 +871,89 @@ def station_menu(args, title, options, can_save):
             print(i18n.t("menu.unknown"))
 
 
+def cassette_lines(frame, playing):
+    """CUI 카세트(세로로 큰 모양). 재생 중이면 두 릴이 반대 방향으로 돌고, 테이프 띠가 흐른다. 정지면 모두 멈춘다."""
+    left_spokes = "|/-\\"
+    right_spokes = "|\\-/"
+    step = frame if playing else 0
+    left = left_spokes[step % 4]
+    right = right_spokes[step % 4]
+    band = "▓▒░░▒▓" * 4
+    offset = step % 6
+    tape = band[offset:offset + 10]
+    inner = 26
+    margin = " " * 5
+    status = "▶ PLAY" if playing else "■ STOP"
+    rows = [
+        "╭" + "─" * inner + "╮",
+        "│" + (margin + "╭─╮" + "▔" * 10 + "╭─╮" + margin).ljust(inner) + "│",
+        "│" + (margin + f"│{left}│" + tape + f"│{right}│" + margin).ljust(inner) + "│",
+        "│" + (margin + "╰─╯" + "▁" * 10 + "╰─╯" + margin).ljust(inner) + "│",
+        "│" + status.center(inner) + "│",
+        "╰" + "─" * inner + "╯",
+    ]
+    return rows
+
+
+def read_line_animated(draw):
+    """키를 받으면서 0.25초마다 화면을 다시 그린다 (Windows). 다른 OS 는 한 번 그리고 input() 을 쓴다."""
+    if os.name != "nt":
+        draw(0, "")
+        return input("> ").strip()
+    import msvcrt
+    buffer = []
+    frame = 0
+    while True:
+        draw(frame, "".join(buffer))
+        frame += 1
+        deadline = time.time() + 0.25
+        while time.time() < deadline:
+            if not msvcrt.kbhit():
+                time.sleep(0.03)
+                continue
+            ch = msvcrt.getwch()
+            if ch in ("\x00", "\xe0"):   # 화살표 같은 특수키는 뒤에 한 글자가 더 온다
+                msvcrt.getwch()
+                continue
+            if ch in ("\r", "\n"):
+                return "".join(buffer).strip()
+            if ch in ("\x08", "\x7f"):
+                if buffer:
+                    buffer.pop()
+            elif ch == "\x03":
+                raise KeyboardInterrupt
+            elif ch.isprintable():
+                buffer.append(ch)
+            draw(frame, "".join(buffer))
+
+
 def menu(args):
     """장르 목록을 보여 주고, 장르를 고르면 그 장르의 추천 방송을 보여 준다. 명령:
     번호 = 장르 선택, s = 정지, k 키워드 = Radio Browser 검색, q = 닫기"""
     state = State(args.state)
     while True:
-        clear_screen()
         genres = load_genres()
         stations = load_stations()
         # 마지막 항목은 사용자가 config.json 에 넣은 방송국이다.
         entries = [(g["name"], g["stations"], True) for g in genres]
         entries.append((i18n.t("menu.my_stations", count=len(stations)), stations, False))
-        panel(
-            [i18n.t("menu.genres_title")],
-            [f"{index:2}. {name}" for index, (name, _, _) in enumerate(entries, 1)],
-            [i18n.t("menu.help").strip()],
-        )
-        choice = input("> ").strip()
+
+        def draw(frame, typed):
+            # 화면을 지우지 않고 맨 위로 옮겨 덮어쓴다. 지우면 전체가 깜빡인다.
+            sys.stdout.write("\x1b[H")
+            panel(
+                cassette_lines(frame, is_playing(state)),
+                [i18n.t("menu.genres_title")],
+                [f"{index:2}. {name}" for index, (name, _, _) in enumerate(entries, 1)],
+                [i18n.t("menu.help").strip()],
+            )
+            sys.stdout.write("\x1b[J> " + typed)
+            sys.stdout.flush()
+
+        choice = read_line_animated(draw)
 
         if choice in ("", "q"):
             # 목록 pane 은 닫히지 않게 다시 그린다. 정지는 s, 종료는 Ctrl+C 또는 pane 닫기.
-            print()
             continue
         if choice == "s":
             print(i18n.t("msg.stopped") if stop(state) else i18n.t("msg.not_playing"))

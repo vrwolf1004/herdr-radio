@@ -25,5 +25,5 @@
   "menu.genres_title": "=== Жанры ===",
   "menu.my_stations": "Мои станции (config.json, {count})",
   "menu.genre_help": "\nНомер: играть  |  b: назад  |  s: стоп",
-  "menu.genre_help_save": "\nНомер: играть  |  a номер: сохранить в config.json  |  b: назад  |  s: стоп"
+  "menu.genre_help_save": "\nНомер: играть  |  b: назад  |  s: стоп\na номер: сохранить в config.json"
 }
