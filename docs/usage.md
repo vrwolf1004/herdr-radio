@@ -45,6 +45,26 @@ herdr plugin config-dir herdr-radio
 - `url`이 비어 있는 항목은 무시됩니다.
 - 파일을 고친 뒤에는 재시작이 필요 없습니다. 메뉴와 `play N` 액션이 매번 다시 읽습니다.
 
+### 추천 장르 바꾸기
+
+메뉴의 장르와 추천 방송은 플러그인 안의 [src/genres.json](../src/genres.json)에 있습니다. 바꾸고 싶으면 `config.json`에 같은 형식의 `genres`를 넣습니다. `genres`가 있으면 기본 목록 대신 그것만 보여 줍니다.
+
+```json
+{
+  "stations": [],
+  "genres": [
+    {
+      "name": "Jazz",
+      "stations": [
+        { "name": "Radio Swiss Jazz", "country": "CH", "url": "http://stream.srg-ssr.ch/m/rsj/mp3_128" }
+      ]
+    }
+  ]
+}
+```
+
+`play N` 액션은 `genres`가 아니라 `stations`의 N번째 방송을 틉니다.
+
 ## 3. 사이드바 줄
 
 herdr는 `config.toml`에 들어 있는 토큰만 그립니다. `[ui.sidebar.agents]`에 radio 줄을 넣습니다.
@@ -80,11 +100,11 @@ dock의 radio pane에는 방송국 목록(메뉴)이 떠 있습니다. 상태를
 
 | 액션 (Windows) | 액션 (Linux/macOS) | 설명 |
 | --- | --- | --- |
-| `start-windows` | `start` | 마지막으로 재생한 방송을 다시 틀고, 없으면 `config.json`의 첫 방송을 틉니다 |
+| `start-windows` | `start` | 마지막으로 재생한 방송을 다시 틀고, 없으면 `config.json`의 첫 방송(그것도 없으면 첫 추천 방송)을 틉니다 |
 | `stop-windows` | `stop` | 재생을 멈춥니다. 블록은 남고 상태만 `■ 정지`로 바뀝니다 |
 | `menu-windows` | `menu` | 방송국 선택 pane을 엽니다 |
 | `play-N-windows` | `play-N` | `config.json`의 N번째 방송(1~6)을 바로 틉니다 |
-| `next-windows` | `next` | `config.json` 목록에서 지금 방송의 다음 방송을 틉니다. 끝에 오면 처음으로 돌아갑니다 |
+| `next-windows` | `next` | 지금 방송이 든 목록(`config.json` 또는 추천 장르)에서 다음 방송을 틉니다. 끝에 오면 처음으로 돌아갑니다 |
 | `prev-windows` | `prev` | 이전 방송을 틉니다. 처음에 오면 끝으로 돌아갑니다 |
 | `volume-up-windows` | `volume-up` | 재생 중인 mpv의 볼륨을 5 올립니다 (mpv 전용) |
 | `volume-down-windows` | `volume-down` | 재생 중인 mpv의 볼륨을 5 내립니다 (mpv 전용) |
@@ -102,11 +122,22 @@ herdr plugin action invoke start --plugin herdr-radio           # linux / macos
 
 | 입력 | 동작 |
 | --- | --- |
-| 번호 | `config.json` 목록에서 그 방송을 재생합니다 |
+| 번호 | 그 장르를 엽니다. 마지막 `내 방송국`은 `config.json` 목록입니다 |
 | `s` | 재생을 멈춥니다 |
 | `k 키워드` | Radio Browser에서 검색합니다. 결과 번호를 한 번 더 입력하면 재생합니다 |
 | `a 번호` | 검색 결과의 방송을 `config.json`에 저장합니다. 재생하지는 않습니다. 이미 있으면 알려 줍니다 |
 | `q` 또는 Enter | 메뉴를 닫습니다 |
+
+장르를 열면 추천 방송 5개가 나옵니다. 장르 화면의 입력은 다음과 같습니다.
+
+| 입력 | 동작 |
+| --- | --- |
+| 번호 | 그 방송을 재생합니다 |
+| `a 번호` | 그 방송을 `config.json`에 저장합니다 (`내 방송국`에서는 쓸 수 없습니다) |
+| `s` | 재생을 멈춥니다 |
+| `b` 또는 Enter | 장르 목록으로 돌아갑니다 |
+
+추천 방송은 2026년 10월에 재생을 확인한 목록입니다. 스트림 주소가 바뀌어 재생이 안 되면 `k 방송 이름`으로 검색해 새 주소를 쓰세요.
 
 검색 결과는 `hidebroken`과 클릭 수 순으로 최대 10개입니다. 스트림 주소는 자주 바뀌므로 재생이 안 되면 다시 검색하세요.
 

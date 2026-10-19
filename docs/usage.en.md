@@ -45,6 +45,26 @@ Put stations in `config.json` in that folder. The format follows [config.example
 - Entries with an empty `url` are ignored.
 - No restart is needed after editing the file. The menu and the `play-N` actions read it every time.
 
+### Changing the recommended genres
+
+The menu's genres and recommended stations live in [src/genres.json](../src/genres.json) inside the plugin. To change them, add a `genres` list in the same format to `config.json`. When `genres` is present, the menu shows it instead of the built-in list.
+
+```json
+{
+  "stations": [],
+  "genres": [
+    {
+      "name": "Jazz",
+      "stations": [
+        { "name": "Radio Swiss Jazz", "country": "CH", "url": "http://stream.srg-ssr.ch/m/rsj/mp3_128" }
+      ]
+    }
+  ]
+}
+```
+
+The `play-N` actions play the Nth entry of `stations`, not of `genres`.
+
 ## 3. Sidebar rows
 
 herdr draws only the tokens listed in `config.toml`. Add the radio rows to `[ui.sidebar.agents]`:
@@ -80,11 +100,11 @@ The radio pane in the dock shows the station menu. The host loop that updates th
 
 | Action (Windows) | Action (Linux/macOS) | Description |
 | --- | --- | --- |
-| `start-windows` | `start` | Plays the last station again. If there is none, plays the first station in `config.json` |
+| `start-windows` | `start` | Plays the last station again. If there is none, plays the first station in `config.json` (or the first recommended station) |
 | `stop-windows` | `stop` | Stops playback. The block stays and shows `■ stopped` |
 | `menu-windows` | `menu` | Opens the station pane |
 | `play-N-windows` | `play-N` | Plays the Nth station in `config.json` (N = 1 to 6) |
-| `next-windows` | `next` | Plays the next station in `config.json`. After the last one, it wraps to the first |
+| `next-windows` | `next` | Plays the next station in the list the current station is in (`config.json` or a recommended genre). After the last one, it wraps to the first |
 | `prev-windows` | `prev` | Plays the previous station. Before the first one, it wraps to the last |
 | `volume-up-windows` | `volume-up` | Raises the volume of the running mpv by 5 (mpv only) |
 | `volume-down-windows` | `volume-down` | Lowers the volume of the running mpv by 5 (mpv only) |
@@ -102,11 +122,22 @@ The `menu` pane accepts these inputs:
 
 | Input | What it does |
 | --- | --- |
-| number | Plays that station from `config.json` |
+| number | Opens that genre. The last entry, `My stations`, is your `config.json` list |
 | `s` | Stops playback |
 | `k keyword` | Searches Radio Browser. Enter a result number to play it |
 | `a number` | Saves that search result to `config.json` without playing it. Reports if it is already saved |
 | `q` or Enter | Redraws the menu (the pane stays open) |
+
+A genre shows 5 recommended stations and accepts these inputs:
+
+| Input | What it does |
+| --- | --- |
+| number | Plays that station |
+| `a number` | Saves that station to `config.json` (not available in `My stations`) |
+| `s` | Stops playback |
+| `b` or Enter | Goes back to the genre list |
+
+The recommended stations were checked to play in October 2026. If one stops working, search for it with `k station name` to get a current address.
 
 Search returns up to 10 results, ordered by click count, with broken stations hidden. Stream addresses change often, so search again if a station stops working.
 

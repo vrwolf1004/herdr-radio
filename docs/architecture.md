@@ -91,6 +91,7 @@ Windows 파이프 경로를 확인하는 방법: 실제로 `\\.\pipe\...` 형식
 | 파일 | 역할 |
 | --- | --- |
 | `src/radio.py` | 명령(ensure, host, start, stop, menu, status, play), host 루프, Radio Browser 검색, 재생 |
+| `src/genres.json` | 메뉴의 장르별 추천 방송 (`config.json`의 `genres`가 있으면 그것을 씀) |
 | `src/herdr_api.py` | herdr CLI와 socket 호출. feedbag의 파일을 가져온 사본입니다 |
 | `config.example.json` | 방송국 설정 예시 |
 | `herdr-plugin.toml` | 플랫폼별 startup, hook, 액션, pane 선언 |

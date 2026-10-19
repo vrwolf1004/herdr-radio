@@ -1,0 +1,54 @@
+{
+  "genres": [
+    {
+      "name": "Jazz",
+      "stations": [
+        { "name": "Radio Swiss Jazz", "country": "CH", "url": "http://stream.srg-ssr.ch/m/rsj/mp3_128" },
+        { "name": "Jazz Radio", "country": "FR", "url": "http://jazzradio.ice.infomaniak.ch/jazzradio-high.mp3" },
+        { "name": "Jazz Radio Blues", "country": "FR", "url": "http://jazzblues.ice.infomaniak.ch/jazzblues-high.mp3" },
+        { "name": "101 Smooth Jazz", "country": "US", "url": "http://jking.cdnstream1.com/b22139_128mp3" },
+        { "name": "100 Greatest Jazz Lounge Bar", "country": "CA", "url": "https://cast1.torontocast.com:4640/stream" }
+      ]
+    },
+    {
+      "name": "Classical",
+      "stations": [
+        { "name": "Classic FM", "country": "GB", "url": "http://ice-the.musicradio.com/ClassicFMMP3" },
+        { "name": "Radio Swiss Classic", "country": "CH", "url": "http://stream.srg-ssr.ch/m/rsc_de/mp3_128" },
+        { "name": "BR-Klassik", "country": "DE", "url": "https://dispatcher.rndfnk.com/br/brklassik/live/mp3/high" },
+        { "name": "France Musique", "country": "FR", "url": "http://direct.francemusique.fr/live/francemusique-midfi.mp3" },
+        { "name": "Your Classical - Relax", "country": "US", "url": "http://relax.stream.publicradio.org/relax.mp3" }
+      ]
+    },
+    {
+      "name": "K-pop",
+      "stations": [
+        { "name": "Listen.moe Kpop", "country": "KR", "url": "https://listen.moe/kpop/fallback" },
+        { "name": "RauteMusik K-POP", "country": "DE", "url": "https://streams.rautemusik.fm/k-pop/mp3-192" },
+        { "name": "Only Hits K-Pop", "country": "US", "url": "https://kpop.onlyhit.us/play" },
+        { "name": "SBS PopAsia", "country": "AU", "url": "https://sbs-ice.streamguys1.com/sbs-popasia-sbs-web" },
+        { "name": "REYFM #kpop", "country": "DE", "url": "https://listen.reyfm.de/kpop_320kbps.mp3" }
+      ]
+    },
+    {
+      "name": "Lo-fi",
+      "stations": [
+        { "name": "Lofi 24/7", "country": "US", "url": "http://usa9.fastcast4u.com/proxy/jamz?mp=/1" },
+        { "name": "REYFM #lofi", "country": "DE", "url": "https://listen.reyfm.de/lofi_320kbps.mp3" },
+        { "name": "laut.fm lofi", "country": "DE", "url": "https://stream.laut.fm/lofi" },
+        { "name": "0nlineradio LO-FI", "country": "DE", "url": "https://stream.0nlineradio.com/lo-fi" },
+        { "name": "LITT Live - Lofi & Chill", "country": "US", "url": "https://das-sa39.cdnstream1.com/5582_128" }
+      ]
+    },
+    {
+      "name": "News",
+      "stations": [
+        { "name": "BBC World Service", "country": "GB", "url": "http://stream.live.vc.bbcmedia.co.uk/bbc_world_service" },
+        { "name": "NPR 24 Hour Program Stream", "country": "US", "url": "http://npr-ice.streamguys1.com/live.mp3" },
+        { "name": "CNN", "country": "US", "url": "https://tunein.cdnstream1.com/2868_96.mp3" },
+        { "name": "Arirang Radio", "country": "KR", "url": "http://amdlive-ch03-ctnd-com.akamaized.net/arirang_3ch/arirang_3ch_audio/chunklist_b128000.m3u8" },
+        { "name": "Deutschlandfunk", "country": "DE", "url": "https://st01.sslstream.dlf.de/dlf/01/128/mp3/stream.mp3" }
+      ]
+    }
+  ]
+}

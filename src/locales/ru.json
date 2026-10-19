@@ -11,9 +11,8 @@
   "msg.stopped": "Остановлено.",
   "msg.not_playing": "Ничего не воспроизводится.",
   "msg.no_index": "Станции с номером {index} нет. В config.json {count}.",
-  "menu.title": "=== Станции (config.json) ===",
   "menu.empty": "В config.json нет станций.",
-  "menu.help": "\nНомер: играть  |  s: стоп  |  k слово: поиск  |  q: закрыть",
+  "menu.help": "\nНомер: жанр  |  s: стоп  |  k слово: поиск  |  q: закрыть",
   "menu.no_results": "Нет результатов.",
   "menu.pick_result": "Номер результата (Enter=отмена): ",
   "menu.unknown": "Неизвестный ввод.",
@@ -22,5 +21,9 @@
   "msg.exists": "Уже сохранено: {name}",
   "msg.step_none": "Нет станции для перехода.",
   "token.failed": "✖ ошибка",
-  "msg.volume_fail": "Не удалось изменить громкость: mpv не воспроизводит. (Громкость работает только в mpv)"
+  "msg.volume_fail": "Не удалось изменить громкость: mpv не воспроизводит. (Громкость работает только в mpv)",
+  "menu.genres_title": "=== Жанры ===",
+  "menu.my_stations": "Мои станции (config.json, {count})",
+  "menu.genre_help": "\nНомер: играть  |  b: назад  |  s: стоп",
+  "menu.genre_help_save": "\nНомер: играть  |  a номер: сохранить в config.json  |  b: назад  |  s: стоп"
 }

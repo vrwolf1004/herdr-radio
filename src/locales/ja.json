@@ -11,9 +11,8 @@
   "msg.stopped": "停止しました。",
   "msg.not_playing": "再生中の放送はありません。",
   "msg.no_index": "放送局番号 {index} がありません。config.json には {count} 件あります。",
-  "menu.title": "=== 放送局一覧 (config.json) ===",
   "menu.empty": "config.json に放送局がありません。",
-  "menu.help": "\n番号: 再生  |  s: 停止  |  k キーワード: 検索  |  q: 閉じる",
+  "menu.help": "\n番号: ジャンル  |  s: 停止  |  k キーワード: 検索  |  q: 閉じる",
   "menu.no_results": "検索結果がありません。",
   "menu.pick_result": "検索結果の番号 (Enter=キャンセル): ",
   "menu.unknown": "不明な入力です。",
@@ -22,5 +21,9 @@
   "msg.exists": "すでに保存されています: {name}",
   "msg.step_none": "移動先の放送局がありません。",
   "token.failed": "✖ 失敗",
-  "msg.volume_fail": "mpv が再生していないため音量を変えられません。(音量調整は mpv のみ対応)"
+  "msg.volume_fail": "mpv が再生していないため音量を変えられません。(音量調整は mpv のみ対応)",
+  "menu.genres_title": "=== ジャンル ===",
+  "menu.my_stations": "マイ放送局 (config.json, {count})",
+  "menu.genre_help": "\n番号: 再生  |  b: 戻る  |  s: 停止",
+  "menu.genre_help_save": "\n番号: 再生  |  a 番号: config.json に保存  |  b: 戻る  |  s: 停止"
 }

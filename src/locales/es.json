@@ -11,9 +11,8 @@
   "msg.stopped": "Detenido.",
   "msg.not_playing": "No hay nada reproduciéndose.",
   "msg.no_index": "No existe la emisora n.º {index}. config.json tiene {count}.",
-  "menu.title": "=== Emisoras (config.json) ===",
   "menu.empty": "No hay emisoras en config.json.",
-  "menu.help": "\nNúmero: reproducir  |  s: detener  |  k palabra: buscar  |  q: cerrar",
+  "menu.help": "\nNúmero: género  |  s: detener  |  k palabra: buscar  |  q: cerrar",
   "menu.no_results": "Sin resultados.",
   "menu.pick_result": "Número del resultado (Enter=cancelar): ",
   "menu.unknown": "Entrada desconocida.",
@@ -22,5 +21,9 @@
   "msg.exists": "Ya guardada: {name}",
   "msg.step_none": "No hay emisora a la que cambiar.",
   "token.failed": "✖ error",
-  "msg.volume_fail": "No se puede cambiar el volumen: mpv no está reproduciendo. (El volumen solo funciona con mpv)"
+  "msg.volume_fail": "No se puede cambiar el volumen: mpv no está reproduciendo. (El volumen solo funciona con mpv)",
+  "menu.genres_title": "=== Géneros ===",
+  "menu.my_stations": "Mis emisoras (config.json, {count})",
+  "menu.genre_help": "\nNúmero: reproducir  |  b: atrás  |  s: detener",
+  "menu.genre_help_save": "\nNúmero: reproducir  |  a número: guardar en config.json  |  b: atrás  |  s: detener"
 }

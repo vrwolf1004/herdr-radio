@@ -11,9 +11,8 @@
   "msg.stopped": "Stopped.",
   "msg.not_playing": "Nothing is playing.",
   "msg.no_index": "No station {index}. config.json has {count}.",
-  "menu.title": "=== Stations (config.json) ===",
   "menu.empty": "No stations in config.json.",
-  "menu.help": "\nNumber: play  |  s: stop  |  k keyword: search  |  q: close",
+  "menu.help": "\nNumber: genre  |  s: stop  |  k keyword: search  |  q: close",
   "menu.no_results": "No results.",
   "menu.pick_result": "Result number (Enter=cancel): ",
   "menu.unknown": "Unknown input.",
@@ -22,5 +21,9 @@
   "msg.exists": "Already saved: {name}",
   "msg.step_none": "No station to move to.",
   "token.failed": "✖ failed",
-  "msg.volume_fail": "Cannot change volume: no mpv is playing. (Volume control works with mpv only)"
+  "msg.volume_fail": "Cannot change volume: no mpv is playing. (Volume control works with mpv only)",
+  "menu.genres_title": "=== Genres ===",
+  "menu.my_stations": "My stations (config.json, {count})",
+  "menu.genre_help": "\nNumber: play  |  b: back  |  s: stop",
+  "menu.genre_help_save": "\nNumber: play  |  a number: save to config.json  |  b: back  |  s: stop"
 }

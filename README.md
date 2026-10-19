@@ -21,11 +21,29 @@ Sidebar block:
 Menu (the `radio` pane):
 
 ```text
-=== Stations (config.json) ===
- 1. Jazz Radio Blues
- 2. Adroit Jazz Underground
+=== Genres ===
+ 1. Jazz
+ 2. Classical
+ 3. K-pop
+ 4. Lo-fi
+ 5. News
+ 6. My stations (config.json, 2)
 
-Number: play  |  s: stop  |  k keyword: search  |  q: close
+Number: genre  |  s: stop  |  k keyword: search  |  q: close
+>
+```
+
+Pick a genre to see its 5 recommended stations.
+
+```text
+=== Jazz ===
+ 1. Radio Swiss Jazz (CH)
+ 2. Jazz Radio (FR)
+ 3. Jazz Radio Blues (FR)
+ 4. 101 Smooth Jazz (US)
+ 5. 100 Greatest Jazz Lounge Bar (CA)
+
+Number: play  |  a number: save to config.json  |  b: back  |  s: stop
 >
 ```
 
@@ -84,11 +102,11 @@ rows = [
 
 | Action | Description |
 | --- | --- |
-| `start` | Plays the last station again. If there is none, plays the first station in `config.json` |
+| `start` | Plays the last station again. If there is none, plays the first station in `config.json` (or the first recommended station) |
 | `stop` | Stops playback. The block stays and shows `■ stopped` |
-| `menu` | Opens the station pane. Type a keyword to search Radio Browser, or press Enter to see your `config.json` list |
+| `menu` | Opens the station pane. Pick a genre (Jazz, Classical, K-pop, Lo-fi, News) for 5 recommended stations, or `My stations` for your `config.json` list. `k keyword` searches Radio Browser |
 | `play-1` … `play-6` | Plays the Nth station in `config.json` |
-| `next` / `prev` | Plays the next or previous station in `config.json` |
+| `next` / `prev` | Plays the next or previous station in the list the current station is in (`config.json` or a recommended genre) |
 | `volume-up` / `volume-down` | Changes the volume of the running mpv by 5 (mpv only) |
 
 On Windows, append `-windows` to each action id:

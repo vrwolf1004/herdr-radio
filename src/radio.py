@@ -19,12 +19,14 @@
 import argparse
 import json
 import os
+import re
 import shutil
 import signal
 import subprocess
 import sys
 import threading
 import time
+import unicodedata
 import urllib.parse
 import urllib.request
 
@@ -116,19 +118,10 @@ class State:
 # ---------------------------------------------------------------- 설정 / 방송 목록
 
 
-def load_stations():
-    """config.json 의 stations 를 읽는다. 항목은 {"name": ..., "url": ...} 이다."""
-    path = os.path.join(config_dir_path(), "config.json")
-    try:
-        with open(path, encoding="utf-8") as file:
-            data = json.load(file)
-    except (OSError, ValueError):
-        return []
-    # 형식이 틀린 부분(목록이 아닌 stations, 문자열 항목 등)은 건너뛰고 나머지만 쓴다.
-    if not isinstance(data, dict) or not isinstance(data.get("stations"), list):
-        return []
+def clean_stations(items):
+    """{"name", "url", "country"} 목록을 고른다. 빈 url 은 건너뛰고, name 이 없으면 url 을 쓴다."""
     stations = []
-    for item in data["stations"]:
+    for item in items if isinstance(items, list) else []:
         if not isinstance(item, dict):
             continue
         url = item.get("url")
@@ -136,8 +129,50 @@ def load_stations():
             continue
         name = item.get("name")
         name = name.strip() if isinstance(name, str) and name.strip() else url.strip()
-        stations.append({"name": name, "url": url.strip(), "country": ""})
+        country = item.get("country")
+        country = country.strip() if isinstance(country, str) else ""
+        stations.append({"name": name, "url": url.strip(), "country": country})
     return stations
+
+
+def read_config():
+    path = os.path.join(config_dir_path(), "config.json")
+    try:
+        with open(path, encoding="utf-8") as file:
+            data = json.load(file)
+    except (OSError, ValueError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def load_stations():
+    """config.json 의 stations 를 읽는다. 항목은 {"name": ..., "url": ...} 이다."""
+    # 형식이 틀린 부분(목록이 아닌 stations, 문자열 항목 등)은 건너뛰고 나머지만 쓴다.
+    return clean_stations(read_config().get("stations"))
+
+
+GENRES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "genres.json")
+
+
+def load_genres():
+    """장르별 추천 방송 목록. config.json 에 "genres" 가 있으면 그것을, 없으면 src/genres.json 을 쓴다.
+    항목은 {"name": 장르 이름, "stations": [...]} 이고, 방송이 하나도 없는 장르는 뺀다."""
+    genres = read_config().get("genres")
+    if not isinstance(genres, list):
+        try:
+            with open(GENRES_PATH, encoding="utf-8") as file:
+                genres = json.load(file).get("genres")
+        except (OSError, ValueError, AttributeError):
+            genres = []
+    result = []
+    for genre in genres if isinstance(genres, list) else []:
+        if not isinstance(genre, dict):
+            continue
+        stations = clean_stations(genre.get("stations"))
+        name = genre.get("name")
+        if stations and isinstance(name, str) and name.strip():
+            result.append({"name": name.strip(), "stations": stations})
+    return result
 
 
 # ---------------------------------------------------------------- Radio Browser
@@ -394,7 +429,7 @@ def last_station(state):
             return json.loads(raw)
         except ValueError:
             pass
-    stations = load_stations()
+    stations = load_stations() or [s for g in load_genres() for s in g["stations"]]
     return stations[0] if stations else None
 
 
@@ -413,13 +448,31 @@ def workspace_panes(workspace_id):
     return [p for p in panes if p["workspace_id"] == workspace_id]
 
 
-def pick_pane(panes, stored_pane, agent_panes):
-    """dock 안에서 host 를 띄울 pane. 기억해 둔 pane 이 살아 있으면 그것, 아니면 빈 pane 하나."""
+def claimed_by_others(state_dir):
+    """같은 plugins 폴더의 다른 플러그인이 pane.id 로 찜해 둔 pane 목록. 그 pane 은 건드리지 않는다."""
+    plugins_dir = os.path.dirname(os.path.abspath(state_dir))
+    own = os.path.basename(os.path.abspath(state_dir))
+    claimed = set()
+    for name in os.listdir(plugins_dir) if os.path.isdir(plugins_dir) else []:
+        if name == own:
+            continue
+        try:
+            with open(os.path.join(plugins_dir, name, "pane.id"), encoding="utf-8") as f:
+                claimed.add(f.read().strip())
+        except OSError:
+            pass
+    return claimed
+
+
+def pick_pane(panes, stored_pane, agent_panes, claimed=frozenset()):
+    """dock 안에서 host 를 띄울 pane. 기억해 둔 pane 이 살아 있고 다른 플러그인이 찜하지 않았으면 그것,
+    아니면 빈 pane 하나(다른 플러그인이 찜하지 않은 것). 없으면 None 이고 호출한 쪽이 split 한다."""
     ids = [p["pane_id"] for p in panes]
-    if stored_pane in ids:
+    if stored_pane in ids and stored_pane not in claimed:
         return stored_pane
     free = [p["pane_id"] for p in panes
-            if not p.get("label") and not p.get("tokens") and p["pane_id"] not in agent_panes]
+            if not p.get("label") and not p.get("tokens") and p["pane_id"] not in agent_panes
+            and p["pane_id"] not in claimed]
     return free[0] if free else None
 
 
@@ -434,7 +487,7 @@ def ensure_workspace(state):
     state.write("workspace.id", workspace_id)
     panes = workspace_panes(workspace_id)
     agent_panes = {a["pane_id"] for a in herdr_api.cli("agent", "list").get("agents", [])}
-    pane_id = pick_pane(panes, state.read("pane.id"), agent_panes)
+    pane_id = pick_pane(panes, state.read("pane.id"), agent_panes, claimed_by_others(state.directory))
     if pane_id is None:
         anchor = panes[0]["pane_id"] if panes else None
         if anchor is None:
@@ -640,10 +693,19 @@ def cmd_status(args):
     return 0
 
 
-def print_stations(options):
+def station_lines(options):
+    if not options:
+        return [i18n.t("menu.empty")]
+    lines = []
     for index, station in enumerate(options, 1):
         country = f" ({station['country']})" if station.get("country") else ""
-        print(f"{index:2}. {station['name']}{country}")
+        lines.append(f"{index:2}. {station['name']}{country}")
+    return lines
+
+
+def print_stations(options):
+    for line in station_lines(options):
+        print(line)
 
 
 def play_and_report(args, station):
@@ -676,13 +738,24 @@ def save_station(station):
     return True
 
 
-def cmd_step(args, delta):
-    """config.json 목록에서 지금 방송의 다음(delta=1) 또는 이전(delta=-1) 방송을 튼다."""
+def step_list(current):
+    """next/prev 가 돌 목록. 지금 방송이 config.json 에 있으면 config.json, 추천 장르에 있으면 그 장르."""
     stations = load_stations()
+    url = current.get("url") if current else None
+    if url and url not in (s["url"] for s in stations):
+        for genre in load_genres():
+            if any(s["url"] == url for s in genre["stations"]):
+                return genre["stations"]
+    return stations
+
+
+def cmd_step(args, delta):
+    """지금 방송이 든 목록에서 다음(delta=1) 또는 이전(delta=-1) 방송을 튼다."""
+    current = last_station(State(args.state))
+    stations = step_list(current)
     if not stations:
         print(i18n.t("msg.step_none"))
         return 1
-    current = last_station(State(args.state))
     urls = [s["url"] for s in stations]
     if current and current.get("url") in urls:
         index = (urls.index(current["url"]) + delta) % len(stations)
@@ -709,20 +782,106 @@ def cmd_play(args):
     return 0 if play_and_report(args, stations[index - 1]) else 1
 
 
-def menu(args):
-    """방송국 목록을 보여 주고 번호로 재생한다. 명령:
-    번호 = 재생, s = 정지, k 키워드 = Radio Browser 검색, q = 닫기"""
+def clear_screen():
+    # 매번 화면을 지우고 다시 그린다. 셸 기록이나 이전 출력이 목록 아래에 남지 않게 한다.
+    sys.stdout.write("\x1b[H\x1b[2J")
+
+
+ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
+
+
+def display_width(text):
+    """터미널에서 차지하는 칸 수. 한글과 전각 문자는 두 칸으로 센다."""
+    return sum(2 if unicodedata.east_asian_width(char) in ("W", "F") else 1 for char in text)
+
+
+def panel(*sections, min_inner=44, max_inner=70):
+    """timekit 패널처럼 테두리 상자에 담아 출력한다. 섹션 사이는 가로줄로 나눈다.
+    각 섹션은 줄 목록이고, 한 문자열 안의 줄바꿈도 줄로 나눈다. ANSI 색 코드는 칸 수에서 뺀다."""
+    rows = []
+    for index, section in enumerate(sections):
+        if index:
+            rows.append(None)
+        for line in section:
+            rows += (line.splitlines() or [""])
+    widths = [display_width(ANSI_RE.sub("", row)) for row in rows if row is not None]
+    inner = min(max_inner, max([min_inner] + [w + 2 for w in widths]))
+    print("╭" + "─" * inner + "╮")
+    for row in rows:
+        if row is None:
+            print("├" + "─" * inner + "┤")
+            continue
+        width = display_width(ANSI_RE.sub("", row))
+        print("│ " + row + " " * max(0, inner - 1 - width) + "│")
+    print("╰" + "─" * inner + "╯")
+
+
+def search_and_pick(args, keyword):
+    try:
+        options = search(keyword) if keyword else []
+    except RuntimeError as error:
+        print(error)
+        return
+    if not options:
+        print(i18n.t("menu.no_results"))
+        return
+    print_stations(options)
+    pick_station(args, options, input(i18n.t("menu.pick_result_add")))
+
+
+def pick_station(args, options, picked, can_save=True):
+    """번호 = 재생, a 번호 = config.json 에 저장. 처리했으면 True."""
+    picked = picked.strip().lower()
+    if can_save and picked.startswith("a ") and picked[2:].strip().isdigit():
+        number = int(picked[2:].strip())
+        if 1 <= number <= len(options):
+            station = options[number - 1]
+            saved = save_station(station)
+            print(i18n.t("msg.saved" if saved else "msg.exists", name=station["name"]))
+            return True
+        return False
+    if picked.isdigit() and 1 <= int(picked) <= len(options):
+        play_and_report(args, options[int(picked) - 1])
+        return True
+    return False
+
+
+def station_menu(args, title, options, can_save):
+    """한 장르(또는 config.json)의 방송 목록. b 나 빈 입력이면 장르 목록으로 돌아간다."""
     state = State(args.state)
     while True:
-        # 매번 화면을 지우고 다시 그린다. 셸 기록이나 이전 출력이 목록 아래에 남지 않게 한다.
-        sys.stdout.write("[H[2J")
+        clear_screen()
+        panel(
+            [f"=== {title} ==="],
+            station_lines(options),
+            [i18n.t("menu.genre_help_save" if can_save else "menu.genre_help").strip()],
+        )
+        choice = input("> ").strip()
+        if choice in ("", "b"):
+            return
+        if choice == "s":
+            print(i18n.t("msg.stopped") if stop(state) else i18n.t("msg.not_playing"))
+            continue
+        if not pick_station(args, options, choice, can_save):
+            print(i18n.t("menu.unknown"))
+
+
+def menu(args):
+    """장르 목록을 보여 주고, 장르를 고르면 그 장르의 추천 방송을 보여 준다. 명령:
+    번호 = 장르 선택, s = 정지, k 키워드 = Radio Browser 검색, q = 닫기"""
+    state = State(args.state)
+    while True:
+        clear_screen()
+        genres = load_genres()
         stations = load_stations()
-        print(i18n.t("menu.title"))
-        if stations:
-            print_stations(stations)
-        else:
-            print(i18n.t("menu.empty"))
-        print(i18n.t("menu.help"))
+        # 마지막 항목은 사용자가 config.json 에 넣은 방송국이다.
+        entries = [(g["name"], g["stations"], True) for g in genres]
+        entries.append((i18n.t("menu.my_stations", count=len(stations)), stations, False))
+        panel(
+            [i18n.t("menu.genres_title")],
+            [f"{index:2}. {name}" for index, (name, _, _) in enumerate(entries, 1)],
+            [i18n.t("menu.help").strip()],
+        )
         choice = input("> ").strip()
 
         if choice in ("", "q"):
@@ -733,29 +892,10 @@ def menu(args):
             print(i18n.t("msg.stopped") if stop(state) else i18n.t("msg.not_playing"))
             continue
         if choice.startswith("k "):
-            keyword = choice[2:].strip()
-            try:
-                options = search(keyword) if keyword else []
-            except RuntimeError as error:
-                print(error)
-                continue
-            if not options:
-                print(i18n.t("menu.no_results"))
-                continue
-            print_stations(options)
-            picked = input(i18n.t("menu.pick_result_add")).strip().lower()
-            if picked.startswith("a ") and picked[2:].strip().isdigit():
-                number = int(picked[2:].strip())
-                if 1 <= number <= len(options):
-                    station = options[number - 1]
-                    saved = save_station(station)
-                    print(i18n.t("msg.saved" if saved else "msg.exists", name=station["name"]))
-                continue
-            if picked.isdigit() and 1 <= int(picked) <= len(options):
-                play_and_report(args, options[int(picked) - 1])
+            search_and_pick(args, choice[2:].strip())
             continue
-        if choice.isdigit() and 1 <= int(choice) <= len(stations):
-            play_and_report(args, stations[int(choice) - 1])
+        if choice.isdigit() and 1 <= int(choice) <= len(entries):
+            station_menu(args, *entries[int(choice) - 1])
             continue
         print(i18n.t("menu.unknown"))
 

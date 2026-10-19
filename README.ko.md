@@ -23,11 +23,29 @@
 메뉴 (`radio` pane):
 
 ```text
-=== 방송국 목록 (config.json) ===
- 1. Jazz Radio Blues
- 2. Adroit Jazz Underground
+=== 장르 ===
+ 1. Jazz
+ 2. Classical
+ 3. K-pop
+ 4. Lo-fi
+ 5. News
+ 6. 내 방송국 (config.json, 2)
 
-번호: 재생  |  s: 정지  |  k 키워드: 검색  |  q: 닫기
+번호: 장르  |  s: 정지  |  k 키워드: 검색  |  q: 닫기
+>
+```
+
+장르를 고르면 추천 방송 5개가 나옵니다.
+
+```text
+=== Jazz ===
+ 1. Radio Swiss Jazz (CH)
+ 2. Jazz Radio (FR)
+ 3. Jazz Radio Blues (FR)
+ 4. 101 Smooth Jazz (US)
+ 5. 100 Greatest Jazz Lounge Bar (CA)
+
+번호: 재생  |  a 번호: config.json 에 저장  |  b: 뒤로  |  s: 정지
 >
 ```
 
@@ -88,11 +106,11 @@ rows = [
 
 | 액션 | 설명 |
 | --- | --- |
-| `start` | 마지막으로 재생한 방송을 다시 틉니다. 없으면 `config.json`의 첫 방송을 틉니다 |
+| `start` | 마지막으로 재생한 방송을 다시 틉니다. 없으면 `config.json`의 첫 방송(그것도 없으면 첫 추천 방송)을 틉니다 |
 | `stop` | 재생을 멈춥니다. 블록은 남고 `■ 정지`로 바뀝니다 |
-| `menu` | 방송국 pane을 엽니다. 키워드를 입력하면 Radio Browser에서 검색하고, Enter를 누르면 `config.json` 목록을 보여 줍니다 |
+| `menu` | 방송국 pane을 엽니다. 장르(Jazz, Classical, K-pop, Lo-fi, News)를 고르면 추천 방송 5개가 나오고, `내 방송국`에는 `config.json` 목록이 나옵니다. `k 키워드`로 Radio Browser를 검색합니다 |
 | `play-1` … `play-6` | `config.json`의 N번째 방송을 틉니다 |
-| `next` / `prev` | `config.json` 목록에서 다음 또는 이전 방송을 틉니다 |
+| `next` / `prev` | 지금 방송이 든 목록(`config.json` 또는 추천 장르)에서 다음 또는 이전 방송을 틉니다 |
 | `volume-up` / `volume-down` | 재생 중인 mpv의 볼륨을 5만큼 올리거나 내립니다 (mpv 전용) |
 
 Windows에서는 각 액션 id 뒤에 `-windows`를 붙입니다.
