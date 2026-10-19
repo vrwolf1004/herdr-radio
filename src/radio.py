@@ -931,6 +931,8 @@ def menu(args):
     """장르 목록을 보여 주고, 장르를 고르면 그 장르의 추천 방송을 보여 준다. 명령:
     번호 = 장르 선택, s = 정지, k 키워드 = Radio Browser 검색, q = 닫기"""
     state = State(args.state)
+    # 실행할 때 셸이 찍은 명령줄을 지운다. 이후 화면은 맨 위로 옮겨 덮어쓰기만 한다.
+    clear_screen()
     while True:
         genres = load_genres()
         stations = load_stations()
