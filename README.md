@@ -29,7 +29,7 @@ Menu (the `radio` pane):
  5. News
  6. My stations (config.json, 2)
 
-Number: genre  |  s: stop  |  k keyword: search  |  q: close
+[Number] genre   [s] stop   [k keyword] search   [q] close
 >
 ```
 
@@ -43,7 +43,8 @@ Pick a genre to see its 5 recommended stations.
  4. 101 Smooth Jazz (US)
  5. 100 Greatest Jazz Lounge Bar (CA)
 
-Number: play  |  a number: save to config.json  |  b: back  |  s: stop
+[number] play   [b] back   [s] stop
+[a number] save to config.json
 >
 ```
 
@@ -53,7 +54,7 @@ Number: play  |  a number: save to config.json  |  b: back  |  s: stop
 herdr plugin install vrwolf1004/herdr-radio --yes
 ```
 
-Then save a few stations and add the radio rows to herdr's `config.toml`. See the [usage guide](docs/usage.en.md).
+Then save a few stations and add the radio rows to herdr's `config.toml`. See the [usage guide](docs/usage.md).
 
 To develop from a local copy:
 
@@ -136,8 +137,10 @@ The menu and sidebar text follow the first match in this list:
 
 ## Documentation
 
-- [Usage guide (English)](docs/usage.en.md)
-- [사용법 (Korean usage guide)](docs/usage.md)
+- [Usage guide (English)](docs/usage.md)
+- [사용법 (Korean usage guide)](docs/usage.ko.md)
+- [Troubleshooting](docs/troubleshooting.md) (Korean, with English items)
+- [Development (Korean)](docs/development.md)
 - [Architecture (Korean)](docs/architecture.md)
 - [TODO (Korean)](docs/todo.md)
 

@@ -1,37 +1,37 @@
-# 사용법
+# Usage
 
-herdr-radio는 방송국을 화면 없이 재생하고, 재생 상태를 herdr 사이드바 하단 블록에 보여 주는 플러그인입니다. 설치와 기본 개념은 [README](../README.md)를 참고하세요. 이 문서는 설정과 실제 사용 방법을 설명합니다.
+herdr-radio plays Radio Browser stations with no window, and shows the playback state in the bottom block of the herdr sidebar. For installation and the basic idea, see the [README](../README.md). This guide covers configuration and everyday use.
 
-## 1. 설치와 요구 사항
+## 1. Installation and requirements
 
 ```sh
-herdr plugin install vrwolf1004/herdr-radio
+herdr plugin install vrwolf1004/herdr-radio --yes
 ```
 
-로컬 사본으로 개발할 때는 link를 씁니다.
+For development from a local copy, use `link`:
 
 ```sh
 herdr plugin link C:/work/app/herdr-radio
 ```
 
-- Python 3.8 이상 (표준 라이브러리만 사용)
-- mpv 또는 ffplay
-  - Windows: `winget install shinchiro.mpv`로 명령줄 빌드를 설치합니다. `mpv.net`은 GUI 전용이라 `mpv` 명령이 없습니다.
-  - Windows에서 `winget`이 없으면 mpv 압축 파일을 받아 `C:\Program Files\mpv\mpv.exe`에 두면 플러그인이 이 위치도 찾습니다.
+- Python 3.8 or later (standard library only)
+- mpv or ffplay
+  - Windows: `winget install shinchiro.mpv` installs the command-line build. `mpv.net` is GUI-only and has no `mpv` command.
+  - If `winget` is unavailable on Windows, put `mpv.exe` at `C:\Program Files\mpv\mpv.exe`; the plugin checks this path too.
   - macOS: `brew install mpv`
-  - Linux: 배포판 패키지 관리자로 `mpv` 설치
+  - Linux: install `mpv` with your package manager
 
-Python이 PATH에 없으면 플러그인이 실행되지 않습니다. 확인 방법은 `python --version`입니다. herdr 서버는 시작 시점의 PATH를 물려받으므로, PATH를 바꾼 뒤에는 서버를 재시작해야 합니다.
+If Python is not on PATH, the plugin will not run. Check with `python --version`. The herdr server inherits PATH at startup, so restart it after changing PATH.
 
-## 2. 방송국 등록
+## 2. Registering stations
 
-설정 파일 위치는 다음 명령으로 확인합니다.
+Find the config folder with:
 
 ```sh
 herdr plugin config-dir herdr-radio
 ```
 
-그 폴더의 `config.json`에 방송국을 넣습니다. 형식은 [config.example.json](../config.example.json)과 같습니다.
+Put stations in `config.json` in that folder. The format follows [config.example.json](../config.example.json).
 
 ```json
 {
@@ -41,13 +41,13 @@ herdr plugin config-dir herdr-radio
 }
 ```
 
-- `name`은 사이드바와 메뉴에 표시됩니다. 생략하면 URL이 이름으로 쓰입니다.
-- `url`이 비어 있는 항목은 무시됩니다.
-- 파일을 고친 뒤에는 재시작이 필요 없습니다. 메뉴와 `play N` 액션이 매번 다시 읽습니다.
+- `name` is shown in the sidebar and the menu. If omitted, the URL is used.
+- Entries with an empty `url` are ignored.
+- No restart is needed after editing the file. The menu and the `play-N` actions read it every time.
 
-### 추천 장르 바꾸기
+### Changing the recommended genres
 
-메뉴의 장르와 추천 방송은 플러그인 안의 [src/genres.json](../src/genres.json)에 있습니다. 바꾸고 싶으면 `config.json`에 같은 형식의 `genres`를 넣습니다. `genres`가 있으면 기본 목록 대신 그것만 보여 줍니다.
+The menu's genres and recommended stations live in [src/genres.json](../src/genres.json) inside the plugin. To change them, add a `genres` list in the same format to `config.json`. When `genres` is present, the menu shows it instead of the built-in list.
 
 ```json
 {
@@ -63,11 +63,11 @@ herdr plugin config-dir herdr-radio
 }
 ```
 
-`play N` 액션은 `genres`가 아니라 `stations`의 N번째 방송을 틉니다.
+The `play-N` actions play the Nth entry of `stations`, not of `genres`.
 
-## 3. 사이드바 줄
+## 3. Sidebar rows
 
-herdr는 `config.toml`에 들어 있는 토큰만 그립니다. `[ui.sidebar.agents]`에 radio 줄을 넣습니다.
+herdr draws only the tokens listed in `config.toml`. Add the radio rows to `[ui.sidebar.agents]`:
 
 ```toml
 [ui.sidebar.agents]
@@ -79,90 +79,77 @@ rows = [
 ]
 ```
 
-feedbag을 함께 쓰면 두 블록이 같은 `herdr-dock`에 모입니다. `$fb_*` 줄도 같은 `rows`에 넣으세요. 넣은 뒤에는 `herdr server reload-config`를 실행합니다.
+If you also use herdr-ai-feedbag, both blocks share the same `herdr-dock` workspace. Add the `$fb_*` rows to the same `rows` list. Then run `herdr server reload-config`.
 
-- `$rd_*` 토큰은 radio 블록에만 보고되므로 다른 agent 행에는 나오지 않습니다.
-- 재생이 정지 없이 끝나면(연결 실패, 스트림 끊김) 블록에 `✖ 실패`와 방송 이름이 나옵니다. 정지하거나 다시 틀면 사라집니다.
-- 맨 아래 고정은 feedbag이 담당합니다. feedbag이 없으면 radio 블록이 맨 아래에 있다는 보장이 없습니다.
-- `ui.agent_panel_sort`는 기본값 `"spaces"`로 둡니다.
+- The `$rd_*` tokens appear only on the radio block, so other agent rows are not affected.
+- If playback ends without a stop (connection failure, broken stream), the block shows `✖ failed` and the station name. Stopping or starting playback again clears it.
+- The dock stays at the bottom through herdr-ai-feedbag if it is installed. Without it, the radio worker moves the dock back to the bottom every 5 seconds.
+- Keep `ui.agent_panel_sort` at its default, `"spaces"`.
 
-블록 예시:
+Block example:
 
 ```text
  ● radio
-   ▶ 재생 중
+   ▶ playing
    Jazz Radio Bl…
 ```
 
-dock의 radio pane에는 방송국 목록(메뉴)이 떠 있습니다. 상태를 갱신하는 host 루프는 pane 밖의 분리 프로세스로 돌기 때문에, 목록을 닫아도 사이드바는 계속 갱신됩니다.
+The radio pane in the dock shows the station menu. The host loop that updates the sidebar runs as a detached process outside the pane, so the sidebar keeps updating after you close the menu.
 
-## 4. 액션
+## 4. Actions
 
-| 액션 (Windows) | 액션 (Linux/macOS) | 설명 |
+| Action (Windows) | Action (Linux/macOS) | Description |
 | --- | --- | --- |
-| `start-windows` | `start` | 마지막으로 재생한 방송을 다시 틀고, 없으면 `config.json`의 첫 방송(그것도 없으면 첫 추천 방송)을 틉니다 |
-| `stop-windows` | `stop` | 재생을 멈춥니다. 블록은 남고 상태만 `■ 정지`로 바뀝니다 |
-| `menu-windows` | `menu` | 방송국 선택 pane을 엽니다 |
-| `play-N-windows` | `play-N` | `config.json`의 N번째 방송(1~6)을 바로 틉니다 |
-| `next-windows` | `next` | 지금 방송이 든 목록(`config.json` 또는 추천 장르)에서 다음 방송을 틉니다. 끝에 오면 처음으로 돌아갑니다 |
-| `prev-windows` | `prev` | 이전 방송을 틉니다. 처음에 오면 끝으로 돌아갑니다 |
-| `volume-up-windows` | `volume-up` | 재생 중인 mpv의 볼륨을 5 올립니다 (mpv 전용) |
-| `volume-down-windows` | `volume-down` | 재생 중인 mpv의 볼륨을 5 내립니다 (mpv 전용) |
+| `start-windows` | `start` | Plays the last station again. If there is none, plays the first station in `config.json` (or the first recommended station) |
+| `stop-windows` | `stop` | Stops playback. The block stays and shows `■ stopped` |
+| `menu-windows` | `menu` | Opens the station pane |
+| `play-N-windows` | `play-N` | Plays the Nth station in `config.json` (N = 1 to 6) |
+| `next-windows` | `next` | Plays the next station in the list the current station is in (`config.json` or a recommended genre). After the last one, it wraps to the first |
+| `prev-windows` | `prev` | Plays the previous station. Before the first one, it wraps to the last |
+| `volume-up-windows` | `volume-up` | Raises the volume of the running mpv by 5 (mpv only) |
+| `volume-down-windows` | `volume-down` | Lowers the volume of the running mpv by 5 (mpv only) |
 
-실행 예:
+Examples:
 
 ```sh
 herdr plugin action invoke start-windows --plugin herdr-radio   # windows
 herdr plugin action invoke start --plugin herdr-radio           # linux / macos
 ```
 
-## 5. 메뉴 사용법
+## 5. Using the menu
 
-`menu` pane은 다음 입력을 받습니다.
+Type an input in the `menu` pane and press Enter. The genre list and the station list share one table. Inputs are read as whole lines, so Korean jamo keys such as `ㅅ` do not work here.
 
-| 입력 | 동작 |
-| --- | --- |
-| 번호 | 그 장르를 엽니다. 마지막 `내 방송국`은 `config.json` 목록입니다 |
-| `s` | 재생을 멈춥니다 |
-| `k 키워드` | Radio Browser에서 검색합니다. 결과 번호를 한 번 더 입력하면 재생합니다 |
-| `a 번호` | 검색 결과의 방송을 `config.json`에 저장합니다. 재생하지는 않습니다. 이미 있으면 알려 줍니다 |
-| `q` 또는 Enter | 메뉴를 닫습니다 |
+| Input | Genre list | Station list |
+| --- | --- | --- |
+| number | Opens that genre. The last entry, `My stations`, is your `config.json` list | Plays that station |
+| `a number` | Saves that search result to `config.json` without playing it. Reports if it is already saved | Saves that station to `config.json` (not available in `My stations`) |
+| `s` | Stops playback | Stops playback |
+| `k keyword` | Searches Radio Browser. Enter a result number to play it | — |
+| `b` or Enter | — | Goes back to the genre list |
+| `q` or Enter | Redraws the menu (the pane stays open) | — |
 
-장르를 열면 추천 방송 5개가 나옵니다. 장르 화면의 입력은 다음과 같습니다.
+A genre shows 5 recommended stations.
 
-| 입력 | 동작 |
-| --- | --- |
-| 번호 | 그 방송을 재생합니다 |
-| `a 번호` | 그 방송을 `config.json`에 저장합니다 (`내 방송국`에서는 쓸 수 없습니다) |
-| `s` | 재생을 멈춥니다 |
-| `b` 또는 Enter | 장르 목록으로 돌아갑니다 |
+The recommended stations were checked to play in October 2026. If one stops working, search for it with `k station name` to get a current address.
 
-추천 방송은 2026년 10월에 재생을 확인한 목록입니다. 스트림 주소가 바뀌어 재생이 안 되면 `k 방송 이름`으로 검색해 새 주소를 쓰세요.
+Search returns up to 10 results, ordered by click count, with broken stations hidden. Stream addresses change often, so search again if a station stops working.
 
-검색 결과는 `hidebroken`과 클릭 수 순으로 최대 10개입니다. 스트림 주소는 자주 바뀌므로 재생이 안 되면 다시 검색하세요.
+The list is redrawn in the same place, so old screens do not pile up in the scrollback. On the station list, a cassette picture is drawn above the list (its reels turn while a station plays). If the pane is too short for the whole screen, the cassette picture is hidden so the list still fits. Enlarge the pane to see it again. Ctrl+C closes the menu and returns you to a PowerShell prompt.
 
-목록은 입력할 때마다 화면을 지우고 다시 그립니다. 번호를 누르면 재생이 시작되고 목록이 다시 나옵니다. Enter나 `q`는 목록을 닫지 않고 다시 그립니다. 메뉴 자체를 끄려면 Ctrl+C를 누르세요. 이때는 PowerShell 프롬프트가 나타납니다.
+## 6. Troubleshooting
 
-## 6. 자주 겪는 문제
+Common problems and checks are in [troubleshooting.md](troubleshooting.md) (Korean items first, then English).
 
-- **`mpv 또는 ffplay가 필요합니다`**: 플레이어가 PATH에 없습니다. 2번 항목처럼 설치하고 서버를 재시작하세요.
-- **사이드바에 블록이 안 보임**: `config.toml`의 `$rd_*` 줄이 있는지 확인하고 `herdr server reload-config`를 실행합니다. 줄이 있는데도 안 보이면 host가 돌지 않는 것입니다. 아래 "host가 안 돎" 항목을 보세요.
-- **터미널 창이 뜨고 바로 꺼짐**: 예전 설치본이 남아 있을 때 생깁니다. 다시 설치하세요.
+## 7. Notes
 
-  ```sh
-  herdr plugin uninstall herdr-radio
-  herdr plugin install vrwolf1004/herdr-radio --yes
-  ```
+- The plugin runs with your user permissions and no sandbox. Read the code before installing.
+- Each stream has its own terms of use. Use it for personal listening.
 
-- **host가 안 돎**: 상태 폴더의 `host.log`에 오류가 남습니다 (`%LOCALAPPDATA%\herdr\plugins\herdr-radio\host.log`). 설치 폴더에서 `python src/radio.py ensure`를 실행하면 host를 다시 띄웁니다.
-- **목록에 방송국이 없음**: `config.json`이 `herdr plugin config-dir herdr-radio`가 보여 주는 폴더에 있는지 확인하세요.
-- **재생은 되는데 상태가 `정지`**: 플러그인이 띄운 플레이어만 인식합니다. 명령줄에 `herdr-radio` 표식(`--title=herdr-radio`)이 있는 `mpv.exe`/`ffplay.exe`를 찾습니다. 직접 띄운 mpv는 표식이 없어서 인식되지 않습니다.
-- **`Radio Browser 서버에 연결하지 못했습니다`**: 공개 서버 세 곳이 모두 응답하지 않습니다. 네트워크를 확인하고 잠시 뒤 다시 시도하세요.
-- **pane을 닫아도 재생이 계속됨**: 정상 동작입니다. 완전히 끄려면 `stop` 액션을 쓰세요.
-- **사이드바에 `✖ 실패`가 나옴**: 정지하지 않았는데 플레이어가 끝났다는 뜻입니다. 스트림이 끊겼거나 주소가 틀렸을 수 있습니다. `menu`에서 다른 방송을 고르거나 `start`를 다시 실행하세요. 정지하거나 다시 틀면 표시가 사라집니다.
-- **`재생 중인 mpv가 없어서 볼륨을 바꿀 수 없습니다`**: 볼륨 액션은 재생 중인 mpv에만 동작합니다. 방송을 먼저 틀고 다시 실행하세요. ffplay로 재생 중이면 볼륨을 바꿀 수 없습니다.
+## Documentation
 
-## 7. 주의
-
-- 플러그인은 샌드박스 없이 사용자 권한으로 실행됩니다. 설치 전에 코드를 확인하세요.
-- 방송 스트림마다 이용 조건이 다릅니다. 개인 청취 용도로 쓰세요.
+- [Usage (한국어)](usage.ko.md)
+- [Troubleshooting](troubleshooting.md): common problems (Korean, with English items)
+- [Architecture](architecture.md): how the block works (Korean)
+- [Development](development.md): code layout, checks, adding stations and actions (Korean)
+- [TODO](todo.md): improvement list (Korean)

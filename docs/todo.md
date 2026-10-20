@@ -44,8 +44,8 @@
 
 - [ ] **라이선스 정하기**: README가 "미정"입니다. `herdr_api.py`가 MIT 코드를 가져왔으므로 MIT 등 호환되는 라이선스를 정하고 `LICENSE` 파일을 추가합니다.
 - [x] **`.gitattributes` 추가**: 커밋마다 줄바꿈 경고가 납니다. `* text=auto eol=lf`를 넣습니다. feedbag 저장소의 같은 항목과 맞춥니다.
-- [x] **버전 올리기**: 0.2.0입니다. 위 버그를 고치면 0.3.0으로 올립니다.
-- [x] **README에 `docs/` 링크 추가**: 설치 방법은 README, 설정과 사용법은 `docs/usage.md`로 나눕니다.
+- [x] **버전 올리기**: 현재 `herdr-plugin.toml`의 `version`은 0.4.0입니다.
+- [x] **README에 `docs/` 링크 추가**: 설치 방법은 README, 설정과 사용법은 `docs/usage.md`(영문)와 `docs/usage.ko.md`(한국어)로 나눕니다.
 - [ ] **GitHub 저장소 설정**: topic `herdr-plugin`과 설명을 넣습니다.
 
 ## 공용 dock (herdr-dock)

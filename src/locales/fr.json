@@ -12,7 +12,7 @@
   "msg.not_playing": "Rien n'est en lecture.",
   "msg.no_index": "Pas de station n° {index}. config.json en contient {count}.",
   "menu.empty": "Aucune station dans config.json.",
-  "menu.help": "\nNuméro : genre  |  s : stop  |  k mot-clé : chercher  |  q : fermer",
+  "menu.help": "\n[Numéro] genre   [s] stop   [k mot-clé] chercher   [q] fermer",
   "menu.no_results": "Aucun résultat.",
   "menu.pick_result": "N° du résultat (Entrée=annuler) : ",
   "menu.unknown": "Saisie inconnue.",
@@ -24,6 +24,6 @@
   "msg.volume_fail": "Impossible de changer le volume : mpv ne lit rien. (Le volume n'est géré que par mpv)",
   "menu.genres_title": "=== Genres ===",
   "menu.my_stations": "Mes stations (config.json, {count})",
-  "menu.genre_help": "\nNuméro : lire  |  b : retour  |  s : stop",
-  "menu.genre_help_save": "\nNuméro : lire  |  b : retour  |  s : stop\na numéro : enregistrer dans config.json"
+  "menu.genre_help": "\n[Numéro] lire   [b] retour   [s] stop",
+  "menu.genre_help_save": "\n[Numéro] lire   [b] retour   [s] stop\n[a numéro] enregistrer dans config.json"
 }

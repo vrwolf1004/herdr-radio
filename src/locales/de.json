@@ -12,7 +12,7 @@
   "msg.not_playing": "Es läuft nichts.",
   "msg.no_index": "Kein Sender Nr. {index}. config.json enthält {count}.",
   "menu.empty": "Keine Sender in config.json.",
-  "menu.help": "\nNummer: Genre  |  s: stoppen  |  k Stichwort: suchen  |  q: schließen",
+  "menu.help": "\n[Nummer] Genre   [s] stoppen   [k Stichwort] suchen   [q] schließen",
   "menu.no_results": "Keine Ergebnisse.",
   "menu.pick_result": "Ergebnisnummer (Enter=abbrechen): ",
   "menu.unknown": "Unbekannte Eingabe.",
@@ -24,6 +24,6 @@
   "msg.volume_fail": "Lautstärke kann nicht geändert werden: mpv spielt nichts. (Lautstärke funktioniert nur mit mpv)",
   "menu.genres_title": "=== Genres ===",
   "menu.my_stations": "Meine Sender (config.json, {count})",
-  "menu.genre_help": "\nNummer: abspielen  |  b: zurück  |  s: stoppen",
-  "menu.genre_help_save": "\nNummer: abspielen  |  b: zurück  |  s: stoppen\na Nummer: in config.json speichern"
+  "menu.genre_help": "\n[Nummer] abspielen   [b] zurück   [s] stoppen",
+  "menu.genre_help_save": "\n[Nummer] abspielen   [b] zurück   [s] stoppen\n[a Nummer] in config.json speichern"
 }

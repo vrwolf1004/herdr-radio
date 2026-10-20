@@ -31,7 +31,7 @@
  5. News
  6. 내 방송국 (config.json, 2)
 
-번호: 장르  |  s: 정지  |  k 키워드: 검색  |  q: 닫기
+[번호] 장르   [s] 정지   [k 키워드] 검색   [q] 닫기
 >
 ```
 
@@ -45,7 +45,8 @@
  4. 101 Smooth Jazz (US)
  5. 100 Greatest Jazz Lounge Bar (CA)
 
-번호: 재생  |  a 번호: config.json 에 저장  |  b: 뒤로  |  s: 정지
+[번호] 재생   [b] 뒤로   [s] 정지
+[a 번호] config.json 에 저장
 >
 ```
 
@@ -55,7 +56,7 @@
 herdr plugin install vrwolf1004/herdr-radio --yes
 ```
 
-설치 후 방송국을 몇 개 등록하고, herdr `config.toml`에 radio 줄을 추가하세요. [사용법](docs/usage.md) (영문: [usage.en.md](docs/usage.en.md))을 참고하세요.
+설치 후 방송국을 몇 개 등록하고, herdr `config.toml`에 radio 줄을 추가하세요. [사용법](docs/usage.ko.md) (영문: [usage.md](docs/usage.md))을 참고하세요.
 
 로컬 사본으로 개발하려면 다음과 같이 연결합니다.
 
@@ -138,8 +139,10 @@ herdr plugin action invoke start --plugin herdr-radio           # linux / macos
 
 ## 문서
 
-- [사용법 (한국어)](docs/usage.md)
-- [Usage guide (English)](docs/usage.en.md)
+- [사용법 (한국어)](docs/usage.ko.md)
+- [Usage guide (English)](docs/usage.md)
+- [문제 해결](docs/troubleshooting.md)
+- [개발과 확인 방법](docs/development.md)
 - [구조 및 동작 방식 (한국어)](docs/architecture.md)
 - [TODO (한국어)](docs/todo.md)
 

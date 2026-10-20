@@ -468,12 +468,37 @@ def pick_pane(panes, stored_pane, agent_panes, claimed=frozenset()):
     """dock 안에서 host 를 띄울 pane. 기억해 둔 pane 이 살아 있고 다른 플러그인이 찜하지 않았으면 그것,
     아니면 빈 pane 하나(다른 플러그인이 찜하지 않은 것). 없으면 None 이고 호출한 쪽이 split 한다."""
     ids = [p["pane_id"] for p in panes]
-    if stored_pane in ids and stored_pane not in claimed:
+    if stored_pane in ids and stored_pane not in claimed and stored_pane not in agent_panes:
         return stored_pane
     free = [p["pane_id"] for p in panes
             if not p.get("label") and not p.get("tokens") and p["pane_id"] not in agent_panes
             and p["pane_id"] not in claimed]
     return free[0] if free else None
+
+
+def grid_split(anchor, cwd):
+    """dock 을 2x2 로 나눈다. 자리는 왼쪽 위, 오른쪽 위, 왼쪽 아래, 오른쪽 아래 순서이고, 빈 자리는 빈 채로 둔다.
+    anchor 로 갈 수 없는 자리는 건너뛴다. 나눌 자리가 없으면 anchor 아래로 나눈다."""
+    layout = herdr_api.cli("pane", "layout", "--pane", anchor)["layout"]
+    area = layout["area"]
+    corners = {}
+    for pane in layout["panes"]:
+        rect = pane["rect"]
+        corners[(0 if rect["x"] <= area["x"] else 1, 0 if rect["y"] <= area["y"] else 1)] = pane["pane_id"]
+    top_left, top_right = corners.get((0, 0)), corners.get((1, 0))
+    bottom_left, bottom_right = corners.get((0, 1)), corners.get((1, 1))
+    if top_left and not top_right:
+        target, direction = top_left, "right"
+    elif top_left and not bottom_left:
+        target, direction = top_left, "down"
+    elif top_right and not bottom_right:
+        target, direction = top_right, "down"
+    elif bottom_left and not bottom_right:
+        target, direction = bottom_left, "right"
+    else:
+        target, direction = anchor, "down"
+    split = herdr_api.cli("pane", "split", target, "--direction", direction, "--cwd", cwd)
+    return split["pane"]["pane_id"]
 
 
 def ensure_workspace(state):
@@ -492,8 +517,7 @@ def ensure_workspace(state):
         anchor = panes[0]["pane_id"] if panes else None
         if anchor is None:
             raise herdr_api.HerdrError(f"workspace {workspace_id} has no pane")
-        split = herdr_api.cli("pane", "split", anchor, "--direction", "down", "--cwd", state.directory)
-        pane_id = split["pane"]["pane_id"]
+        pane_id = grid_split(anchor, state.directory)
     state.write("pane.id", pane_id)
     return workspace_id, pane_id
 
@@ -783,11 +807,20 @@ def cmd_play(args):
 
 
 def clear_screen():
-    # 매번 화면을 지우고 다시 그린다. 셸 기록이나 이전 출력이 목록 아래에 남지 않게 한다.
-    sys.stdout.write("\x1b[H\x1b[2J")
+    # 화면과 스크롤백을 비운다. \x1b[2J 는 지운 내용을 스크롤백에 남기고, \x1b[3J 가 그 스크롤백을 지운다.
+    sys.stdout.write("\x1b[H\x1b[2J\x1b[3J")
 
 
 ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
+
+
+def dim_keys(text):
+    """줄마다 첫 [ 부터 끝까지, 단축키 안내를 회색으로 한다."""
+    lines = []
+    for line in text.split("\n"):
+        index = line.find("[")
+        lines.append(line if index < 0 else line[:index] + "\x1b[2m" + line[index:] + "\x1b[0m")
+    return "\n".join(lines)
 
 
 def display_width(text):
@@ -795,9 +828,13 @@ def display_width(text):
     return sum(2 if unicodedata.east_asian_width(char) in ("W", "F") else 1 for char in text)
 
 
-def panel(*sections, min_inner=44, max_inner=70):
+def panel(*sections, min_inner=44, max_inner=70, max_rows=None, drop_first=True, title=None):
     """timekit 패널처럼 테두리 상자에 담아 출력한다. 섹션 사이는 가로줄로 나눈다.
-    각 섹션은 줄 목록이고, 한 문자열 안의 줄바꿈도 줄로 나눈다. ANSI 색 코드는 칸 수에서 뺀다."""
+    각 섹션은 줄 목록이고, 한 문자열 안의 줄바꿈도 줄로 나눈다. ANSI 색 코드는 칸 수에서 뺀다.
+    pane 높이를 넘으면 첫 섹션(카세트)만 뺀다. 마지막 줄까지 쓰면 줄바꿈 때 화면이 밀려 스크롤이 생기므로,
+    출력은 max_rows 줄 안에서 끝낸다. 줄 끝은 지워서 이전 프레임의 글자가 남지 않게 한다."""
+    if max_rows is None:
+        max_rows = shutil.get_terminal_size((80, 24)).lines - 1
     rows = []
     for index, section in enumerate(sections):
         if index:
@@ -805,15 +842,25 @@ def panel(*sections, min_inner=44, max_inner=70):
         for line in section:
             rows += (line.splitlines() or [""])
     widths = [display_width(ANSI_RE.sub("", row)) for row in rows if row is not None]
+    if title:
+        widths.append(display_width(title))
     inner = min(max_inner, max([min_inner] + [w + 2 for w in widths]))
-    print("╭" + "─" * inner + "╮")
+    lines = ["╭" + "─" * inner + "╮"]
+    if title:
+        left = max(0, (inner - display_width(title)) // 2)
+        lines.append("│" + " " * left + title + " " * max(0, inner - left - display_width(title)) + "│")
+        lines.append("├" + "─" * inner + "┤")
     for row in rows:
         if row is None:
-            print("├" + "─" * inner + "┤")
+            lines.append("├" + "─" * inner + "┤")
             continue
         width = display_width(ANSI_RE.sub("", row))
-        print("│ " + row + " " * max(0, inner - 1 - width) + "│")
-    print("╰" + "─" * inner + "╯")
+        lines.append("│ " + row + " " * max(0, inner - 1 - width) + "│")
+    lines.append("╰" + "─" * inner + "╯")
+    if len(lines) > max_rows and drop_first and len(sections) > 1:
+        return panel(*sections[1:], min_inner=min_inner, max_inner=max_inner, max_rows=max_rows, drop_first=False, title=title)
+    for line in lines[:max_rows]:
+        print(line + "\x1b[K")
 
 
 def search_and_pick(args, keyword):
@@ -856,7 +903,8 @@ def station_menu(args, title, options, can_save):
                 cassette_lines(frame, is_playing(state)),
                 [f"=== {title} ==="],
                 station_lines(options),
-                [i18n.t("menu.genre_help_save" if can_save else "menu.genre_help").strip()],
+                [dim_keys(i18n.t("menu.genre_help_save" if can_save else "menu.genre_help").strip())],
+                title="🐺  herdr-radio  🌕",
             )
             sys.stdout.write("\x1b[J> " + typed)
             sys.stdout.flush()
@@ -947,7 +995,8 @@ def menu(args):
                 cassette_lines(frame, is_playing(state)),
                 [i18n.t("menu.genres_title")],
                 [f"{index:2}. {name}" for index, (name, _, _) in enumerate(entries, 1)],
-                [i18n.t("menu.help").strip()],
+                [dim_keys(i18n.t("menu.help").strip())],
+                title="🐺  herdr-radio  🌕",
             )
             sys.stdout.write("\x1b[J> " + typed)
             sys.stdout.flush()
