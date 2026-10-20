@@ -21,30 +21,36 @@ Sidebar block:
 Menu (the `radio` pane):
 
 ```text
-=== Genres ===
- 1. Jazz
- 2. Classical
- 3. K-pop
- 4. Lo-fi
- 5. News
- 6. My stations (config.json, 2)
-
-[Number] genre   [s] stop   [k keyword] search   [q] close
+╭────────────────────────────────────────────────────────────╮
+│                    🐺  herdr-radio  🌕                     │
+├────────────────────────────────────────────────────────────┤
+│  1. Jazz                                                   │
+│  2. Classical                                              │
+│  3. K-pop                                                  │
+│  4. Lo-fi                                                  │
+│  5. News                                                   │
+│  6. My stations (config.json, 2)                           │
+├────────────────────────────────────────────────────────────┤
+│ [Number] genre   [s] stop   [k keyword] search   [q] close │
+╰────────────────────────────────────────────────────────────╯
 >
 ```
 
 Pick a genre to see its 5 recommended stations.
 
 ```text
-=== Jazz ===
- 1. Radio Swiss Jazz (CH)
- 2. Jazz Radio (FR)
- 3. Jazz Radio Blues (FR)
- 4. 101 Smooth Jazz (US)
- 5. 100 Greatest Jazz Lounge Bar (CA)
-
-[number] play   [b] back   [s] stop
-[a number] save to config.json
+╭────────────────────────────────────────────╮
+│            🐺  herdr-radio  🌕             │
+├────────────────────────────────────────────┤
+│  1. Radio Swiss Jazz (CH)                  │
+│  2. Jazz Radio (FR)                        │
+│  3. Jazz Radio Blues (FR)                  │
+│  4. 101 Smooth Jazz (US)                   │
+│  5. 100 Greatest Jazz Lounge Bar (CA)      │
+├────────────────────────────────────────────┤
+│ [number] play   [b] back   [s] stop        │
+│ [a number] save to config.json             │
+╰────────────────────────────────────────────╯
 >
 ```
 
