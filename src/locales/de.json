@@ -25,5 +25,10 @@
   "menu.genres_title": "=== Genres ===",
   "menu.my_stations": "Meine Sender (config.json, {count})",
   "menu.genre_help": "\n[Nummer] abspielen   [b] zurück   [s] stoppen",
-  "menu.genre_help_save": "\n[Nummer] abspielen   [b] zurück   [s] stoppen\n[a Nummer] in config.json speichern"
+  "menu.genre_help_save": "\n[Nummer] abspielen   [b] zurück   [s] stoppen\n[a Nummer] in config.json speichern",
+  "menu.no_player": "⚠ mpv/ffplay nicht gefunden. [i] drücken, um mpv zu installieren (winget)",
+  "msg.player_already": "mpv oder ffplay ist bereits installiert.",
+  "msg.player_installed": "Installiert. Schließen Sie dieses Menü-Fenster und öffnen Sie es erneut, damit mpv gefunden wird.",
+  "msg.player_install_fail": "Installation fehlgeschlagen. Prüfen Sie die Ausgabe oben oder führen Sie aus: winget install shinchiro.mpv",
+  "msg.winget_missing": "winget nicht gefunden. Installieren Sie mpv manuell: https://mpv.io/installation/"
 }

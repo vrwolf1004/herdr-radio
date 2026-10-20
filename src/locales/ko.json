@@ -25,5 +25,10 @@
   "menu.genres_title": "=== 장르 ===",
   "menu.my_stations": "내 방송국 (config.json, {count})",
   "menu.genre_help": "\n[번호] 재생   [b] 뒤로   [s] 정지",
-  "menu.genre_help_save": "\n[번호] 재생   [b] 뒤로   [s] 정지\n[a 번호] config.json 에 저장"
+  "menu.genre_help_save": "\n[번호] 재생   [b] 뒤로   [s] 정지\n[a 번호] config.json 에 저장",
+  "menu.no_player": "⚠ mpv/ffplay가 없습니다. [i] 를 누르면 mpv 를 설치합니다 (winget)",
+  "msg.player_already": "mpv 또는 ffplay가 이미 설치되어 있습니다.",
+  "msg.player_installed": "설치했습니다. 이 목록 pane 을 닫고 다시 열어야 mpv 를 찾습니다.",
+  "msg.player_install_fail": "설치하지 못했습니다. 위 메시지를 확인하거나 직접 실행하세요: winget install shinchiro.mpv",
+  "msg.winget_missing": "winget 을 찾을 수 없습니다. mpv 를 직접 설치하세요: https://mpv.io/installation/"
 }

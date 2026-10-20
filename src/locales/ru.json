@@ -25,5 +25,10 @@
   "menu.genres_title": "=== Жанры ===",
   "menu.my_stations": "Мои станции (config.json, {count})",
   "menu.genre_help": "\n[номер] играть   [b] назад   [s] стоп",
-  "menu.genre_help_save": "\n[номер] играть   [b] назад   [s] стоп\n[a номер] сохранить в config.json"
+  "menu.genre_help_save": "\n[номер] играть   [b] назад   [s] стоп\n[a номер] сохранить в config.json",
+  "menu.no_player": "⚠ mpv/ffplay не найден. Нажмите [i], чтобы установить mpv (winget)",
+  "msg.player_already": "mpv или ffplay уже установлен.",
+  "msg.player_installed": "Установлено. Закройте и снова откройте эту панель меню, чтобы mpv нашёлся.",
+  "msg.player_install_fail": "Не удалось установить. Проверьте вывод выше или выполните вручную: winget install shinchiro.mpv",
+  "msg.winget_missing": "winget не найден. Установите mpv вручную: https://mpv.io/installation/"
 }

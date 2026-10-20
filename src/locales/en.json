@@ -25,5 +25,10 @@
   "menu.genres_title": "=== Genres ===",
   "menu.my_stations": "My stations (config.json, {count})",
   "menu.genre_help": "\n[number] play   [b] back   [s] stop",
-  "menu.genre_help_save": "\n[number] play   [b] back   [s] stop\n[a number] save to config.json"
+  "menu.genre_help_save": "\n[number] play   [b] back   [s] stop\n[a number] save to config.json",
+  "menu.no_player": "⚠ mpv/ffplay not found. Press [i] to install mpv (winget)",
+  "msg.player_already": "mpv or ffplay is already installed.",
+  "msg.player_installed": "Installed. Close and reopen this menu pane so mpv is found.",
+  "msg.player_install_fail": "Install failed. Check the output above or run: winget install shinchiro.mpv",
+  "msg.winget_missing": "winget not found. Install mpv manually: https://mpv.io/installation/"
 }

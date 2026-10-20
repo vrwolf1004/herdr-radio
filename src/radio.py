@@ -975,9 +975,22 @@ def read_line_animated(draw):
             draw(frame, "".join(buffer))
 
 
+def install_player():
+    """winget 으로 mpv 를 설치한다. 설치 진행이 pane 에 보이도록 콘솔 창은 숨기지 않는다."""
+    if find_player()[0]:
+        print(i18n.t("msg.player_already"))
+        return
+    try:
+        result = subprocess.run(["winget", "install", "shinchiro.mpv"])
+    except FileNotFoundError:
+        print(i18n.t("msg.winget_missing"))
+        return
+    print(i18n.t("msg.player_installed" if result.returncode == 0 else "msg.player_install_fail"))
+
+
 def menu(args):
     """장르 목록을 보여 주고, 장르를 고르면 그 장르의 추천 방송을 보여 준다. 명령:
-    번호 = 장르 선택, s = 정지, k 키워드 = Radio Browser 검색, q = 닫기"""
+    번호 = 장르 선택, s = 정지, k 키워드 = Radio Browser 검색, i = mpv 설치, q = 닫기"""
     state = State(args.state)
     # 실행할 때 셸이 찍은 명령줄을 지운다. 이후 화면은 맨 위로 옮겨 덮어쓰기만 한다.
     clear_screen()
@@ -987,6 +1000,7 @@ def menu(args):
         # 마지막 항목은 사용자가 config.json 에 넣은 방송국이다.
         entries = [(g["name"], g["stations"], True) for g in genres]
         entries.append((i18n.t("menu.my_stations", count=len(stations)), stations, False))
+        missing_player = [] if find_player()[0] else [i18n.t("menu.no_player")]
 
         def draw(frame, typed):
             # 화면을 지우지 않고 맨 위로 옮겨 덮어쓴다. 지우면 전체가 깜빡인다.
@@ -995,6 +1009,7 @@ def menu(args):
                 cassette_lines(frame, is_playing(state)),
                 [i18n.t("menu.genres_title")],
                 [f"{index:2}. {name}" for index, (name, _, _) in enumerate(entries, 1)],
+                *([missing_player] if missing_player else []),
                 [dim_keys(i18n.t("menu.help").strip())],
                 title="🐺  herdr-radio  🌕",
             )
@@ -1011,6 +1026,9 @@ def menu(args):
             continue
         if choice.startswith("k "):
             search_and_pick(args, choice[2:].strip())
+            continue
+        if choice == "i":
+            install_player()
             continue
         if choice.isdigit() and 1 <= int(choice) <= len(entries):
             station_menu(args, *entries[int(choice) - 1])
