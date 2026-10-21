@@ -8,7 +8,30 @@ Search Radio Browser or play saved stations without managing a player window. Pl
 
 ## Dashboard design
 
-The radio menu lets you browse genres, search stations, and play or save them. The sidebar block shows the current station and playback status.
+Agents sidebar:
+
+```text
+ ● radio
+   ▶ playing
+   Jazz Radio Bl…
+```
+
+Radio menu:
+
+```text
+╭────────────────────────────────────────────────────────────╮
+│                    🐺  herdr-radio  🌕                     │
+├────────────────────────────────────────────────────────────┤
+│  1. Jazz                                                   │
+│  2. Classical                                              │
+│  3. K-pop                                                  │
+│  4. Lo-fi                                                  │
+│  5. News                                                   │
+│  6. My stations (config.json, 2)                           │
+├────────────────────────────────────────────────────────────┤
+│ [Number] genre   [s] stop   [k keyword] search   [q] close │
+╰────────────────────────────────────────────────────────────╯
+```
 
 ## Installation
 
