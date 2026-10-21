@@ -223,6 +223,36 @@ def search(keyword, limit=10):
     return results
 
 
+SEARCH_CACHE_SECONDS = 600  # 같은 키워드는 10분 동안 저장된 결과를 쓴다
+SEARCH_CACHE_FILE = "search-cache.json"
+
+
+def cached_search(state_dir, keyword, limit=10):
+    """검색 결과를 상태 폴더에 저장해 두고, 같은 키워드는 SEARCH_CACHE_SECONDS 안에서 다시 쓴다."""
+    path = os.path.join(state_dir, SEARCH_CACHE_FILE)
+    try:
+        with open(path, encoding="utf-8") as file:
+            cache = json.load(file)
+    except (OSError, ValueError):
+        cache = {}
+    now = time.time()
+    key = f"{limit}:{keyword.strip().lower()}"
+    entry = cache.get(key) if isinstance(cache, dict) else None
+    if isinstance(entry, dict) and now - entry.get("at", 0) < SEARCH_CACHE_SECONDS:
+        return entry.get("results", [])
+    results = search(keyword, limit)
+    # 기간이 지난 항목은 같이 지워서 파일이 계속 커지지 않게 한다.
+    cache = {k: v for k, v in (cache if isinstance(cache, dict) else {}).items()
+             if isinstance(v, dict) and now - v.get("at", 0) < SEARCH_CACHE_SECONDS}
+    cache[key] = {"at": now, "results": results}
+    try:
+        with open(path, "w", encoding="utf-8") as file:
+            json.dump(cache, file, ensure_ascii=False)
+    except OSError:
+        pass  # 저장하지 못해도 검색 결과는 보여 준다
+    return results
+
+
 # ---------------------------------------------------------------- 재생
 
 
@@ -248,6 +278,25 @@ PLAYER_MARKER = "herdr-radio"  # 플레이어 창 제목. 명령줄에 들어가
 PLAYER_TITLE_ARG = f"--title={PLAYER_MARKER}"  # mpv 인자 형식 (host 명령줄에는 없다)
 
 
+# Unix: 실행 파일 이름(mpv, ffplay)으로 시작하고 마커 인자가 있는 명령줄만 맞춘다.
+# 예전의 `pgrep -f herdr-radio` 는 host 명령줄의 경로까지 맞춰 다른 프로세스를 재생 중으로 오인했다.
+PLAYER_PATTERNS = (
+    rf"(^|/)mpv( .*)? {re.escape(PLAYER_TITLE_ARG)}( |$)",
+    rf"(^|/)ffplay( .*)? -window_title {re.escape(PLAYER_MARKER)}( |$)",
+)
+PROCESS_QUERY_SECONDS = 5  # 외부 명령이 멈춰도 루프가 막히지 않도록 제한 시간을 둔다
+
+
+def _query(args):
+    """외부 명령의 표준 출력. 실패하거나 제한 시간을 넘기면 빈 문자열."""
+    try:
+        completed = subprocess.run(args, capture_output=True, text=True, timeout=PROCESS_QUERY_SECONDS,
+                                   **NO_WINDOW)
+    except (OSError, subprocess.SubprocessError):
+        return ""
+    return completed.stdout
+
+
 def player_pids():
     """이 플러그인이 띄운 플레이어 프로세스 pid 목록.
 
@@ -260,14 +309,11 @@ def player_pids():
             f"Where-Object {{ $_.CommandLine -like '*{PLAYER_TITLE_ARG}*' -or $_.CommandLine -like '*-window_title {PLAYER_MARKER}*' }} | "
             "ForEach-Object { $_.ProcessId }"
         )
-        out = subprocess.run(
-            ["powershell", "-NoProfile", "-Command", script],
-            capture_output=True, **NO_WINDOW, text=True,
-        ).stdout
+        out = _query(["powershell", "-NoProfile", "-Command", script])
         return [int(line) for line in out.split() if line.isdigit()]
     found = []
-    for pattern in (PLAYER_TITLE_ARG, f"-window_title {PLAYER_MARKER}"):
-        out = subprocess.run(["pgrep", "-f", pattern], capture_output=True, text=True).stdout
+    for pattern in PLAYER_PATTERNS:
+        out = _query(["pgrep", "-f", pattern])
         found += [int(line) for line in out.split() if line.isdigit()]
     return [pid for pid in set(found) if pid != os.getpid()]
 
@@ -893,7 +939,7 @@ def panel(*sections, min_inner=44, max_inner=70, max_rows=None, drop_first=True,
 
 def search_and_pick(args, keyword):
     try:
-        options = search(keyword) if keyword else []
+        options = cached_search(args.state, keyword) if keyword else []
     except RuntimeError as error:
         print(error)
         return

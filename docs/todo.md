@@ -38,7 +38,7 @@
 - [x] **볼륨 조절**: mpv는 IPC 소켓이나 `--input-ipc-server`로 볼륨을 바꿀 수 있습니다. 액션 `volume-up`, `volume-down`을 추가합니다. ffplay는 지원하지 않으므로 mpv 전용으로 명시합니다.
 - [x] **재생 실패 감지**: 플레이어가 바로 종료되면 `station.json`은 그대로이고 사이드바에는 `정지`로 보입니다. 실패 이유(스트림 끊김, 404)를 `$rd_state`에 `✖ 실패`처럼 구분해 올립니다.
 - [x] **다음/이전 방송 액션**: `station.json`과 `config.json` 순서를 써서 이동합니다.
-- [ ] **검색 결과 캐시**: 같은 키워드를 여러 번 검색하지 않도록 짧게(예: 10분) 저장합니다.
+- [x] **검색 결과 캐시**: 같은 키워드는 10분 동안 상태 폴더의 `search-cache.json`에서 읽습니다 (`cached_search`).
 
 ## 문서, 배포
 
@@ -46,7 +46,7 @@
 - [x] **`.gitattributes` 추가**: 커밋마다 줄바꿈 경고가 납니다. `* text=auto eol=lf`를 넣습니다. feedbag 저장소의 같은 항목과 맞춥니다.
 - [x] **버전 올리기**: 현재 `herdr-plugin.toml`의 `version`은 0.4.0입니다.
 - [x] **README에 `docs/` 링크 추가**: 설치 방법은 README, 설정과 사용법은 `docs/usage.md`(영문)와 `docs/usage.ko.md`(한국어)로 나눕니다.
-- [ ] **GitHub 저장소 설정**: topic `herdr-plugin`과 설명을 넣습니다.
+- [x] **GitHub 저장소 설정**: topic `herdr-plugin`과 설명이 이미 있는 것을 GitHub API로 확인했습니다.
 
 ## 공용 dock (herdr-dock)
 
@@ -56,12 +56,12 @@
 
 ## 테스트
 
-- [ ] **프로세스 탐색을 실행 파일 기준으로 제한하고 시간 제한 추가**
+- [x] **프로세스 탐색을 실행 파일 기준으로 제한하고 시간 제한 추가** (`PLAYER_PATTERNS`는 mpv·ffplay 실행 파일과 마커 인자만 맞추고, 모든 외부 명령에 5초 제한을 둠. `tests/test_radio.py`)
   - Unix `pgrep -f`는 명령행 문자열만으로 다른 프로세스를 찾을 수 있고, OS별 탐색 명령에 명시적 timeout이 없다. 실행 파일 식별과 시간 초과 테스트를 추가한다.
 - [ ] **저장 PID의 프로세스 재사용 방지 (확인 필요)**
   - PID가 재사용되면 다른 프로세스를 재생 중으로 오인하거나 중지할 수 있다. 실행 파일/명령 식별을 함께 저장하는 방안을 재현 테스트 후 결정한다.
 
-- [ ] **테스트 디렉터리 만들기**: 현재 테스트가 없습니다. 최소한 다음을 테스트합니다.
+- [x] **테스트 디렉터리 만들기**: `tests/test_radio.py` 15개 (short_name, pick_pane, 방송국 목록, 검색 응답, 플레이어 패턴, 제한 시간, 검색 캐시).
   - `short_name`: 긴 이름이 `NAME_WIDTH`에서 잘리고 `…`이 붙는지
   - `pick_pane`: 기억한 pane이 살아 있으면 그것을, 아니면 라벨·토큰이 없는 빈 pane을 고르는지
   - `load_stations`: 빈 url을 건너뛰고 name이 없으면 url을 쓰는지
