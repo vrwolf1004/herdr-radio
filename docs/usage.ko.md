@@ -23,6 +23,8 @@ herdr plugin link C:/work/app/herdr-radio
 
 Python이 PATH에 없으면 플러그인이 실행되지 않습니다. 확인 방법은 `python --version`입니다. herdr 서버는 시작 시점의 PATH를 물려받으므로, PATH를 바꾼 뒤에는 서버를 재시작해야 합니다.
 
+Windows에서 메뉴가 mpv와 ffplay를 모두 찾지 못하면 `i`를 누르라는 안내가 나옵니다. 누르면 pane 안에서 `winget install shinchiro.mpv`를 실행합니다. 설치가 끝난 뒤에는 플레이어를 다시 찾도록 메뉴를 닫고 다시 여세요.
+
 ## 2. 방송국 등록
 
 설정 파일 위치는 다음 명령으로 확인합니다.
@@ -126,6 +128,7 @@ herdr plugin action invoke start --plugin herdr-radio           # linux / macos
 | `a 번호` | 검색 결과의 방송을 `config.json`에 저장합니다. 재생하지는 않습니다. 이미 있으면 알려 줍니다 | 그 방송을 `config.json`에 저장합니다 (`내 방송국`에서는 쓸 수 없습니다) |
 | `s` | 재생을 멈춥니다 | 재생을 멈춥니다 |
 | `k 키워드` | Radio Browser에서 검색합니다. 결과 번호를 한 번 더 입력하면 재생합니다 | — |
+| `i` | Windows에서 mpv와 ffplay를 모두 찾지 못했을 때 `winget`으로 mpv를 설치합니다 | — |
 | `b` 또는 Enter | — | 장르 목록으로 돌아갑니다 |
 | `q` 또는 Enter | 메뉴를 닫지 않고 다시 그립니다 | — |
 

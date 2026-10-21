@@ -77,6 +77,8 @@ herdr plugin link ./herdr-radio
 - **macOS:** `brew install mpv`
 - **Linux:** 배포판 패키지 관리자로 `mpv`를 설치합니다.
 
+Windows에서 두 플레이어를 모두 찾지 못하면 메뉴에 `i`를 눌러 `winget install shinchiro.mpv`를 실행하는 안내가 나옵니다. 설치한 뒤에는 플레이어를 다시 찾도록 메뉴를 닫고 다시 여세요.
+
 ## 방송국 등록
 
 `herdr plugin config-dir herdr-radio`로 설정 폴더를 확인하고 `config.json`을 편집합니다. 형식은 [config.example.json](config.example.json)을 참고하세요.

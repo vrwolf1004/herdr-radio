@@ -5,6 +5,7 @@
 ## 한국어
 
 - **`mpv 또는 ffplay가 필요합니다`**: 플레이어가 PATH에 없습니다. [사용법](usage.ko.md)의 1번 항목처럼 설치하고 서버를 재시작하세요.
+- **메뉴에서 `i`로 mpv를 설치하지 못함**: 이 기능은 Windows의 `winget`이 필요합니다. 설치 출력에 나온 오류를 확인하고, `winget install shinchiro.mpv`를 직접 실행하거나 [mpv 설치 안내](https://mpv.io/installation/)에 따라 설치하세요. 설치 후에는 메뉴를 닫고 다시 여세요.
 - **사이드바에 블록이 안 보임**: `config.toml`의 `$rd_*` 줄이 있는지 확인하고 `herdr server reload-config`를 실행합니다. 줄이 있는데도 안 보이면 host가 돌지 않는 것입니다. 아래 "host가 안 돎" 항목을 보세요.
 - **터미널 창이 뜨고 바로 꺼짐**: 예전 설치본이 남아 있을 때 생깁니다. 다시 설치하세요.
 
@@ -24,6 +25,7 @@
 ## English
 
 - **`mpv or ffplay is required` (mpv 또는 ffplay가 필요합니다)**: the player is not on PATH. Install it as in section 1 of the [usage guide](usage.md) and restart the server.
+- **Installing mpv with `i` in the menu fails**: this Windows-only shortcut needs `winget`. Check the installation output, run `winget install shinchiro.mpv` yourself, or follow the [mpv installation guide](https://mpv.io/installation/). Close and reopen the menu after installation.
 - **The sidebar block does not appear**: check that the `$rd_*` rows are in `config.toml` and run `herdr server reload-config`. If the rows exist but the block still does not appear, the host is not running. See "Host is not running" below.
 - **A terminal window flashes open and closes**: an old installed copy is still present. Reinstall:
 

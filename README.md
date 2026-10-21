@@ -75,6 +75,8 @@ herdr plugin link ./herdr-radio
 - **macOS:** `brew install mpv`
 - **Linux:** install `mpv` with your package manager.
 
+On Windows, when neither player is found, the menu also shows an `i` prompt that runs `winget install shinchiro.mpv`. Close and reopen the menu after installation so the player is detected.
+
 ## Configure stations
 
 Open the config folder with `herdr plugin config-dir herdr-radio` and edit `config.json`. See [config.example.json](config.example.json) for the format.
@@ -102,7 +104,7 @@ rows = [
 ```
 
 - The `$rd_*` tokens appear only on the radio block, so other agent rows are unaffected.
-- `herdr-dock` is the shared workspace used by herdr-ai-feedbag. If both plugins are installed, their blocks share the dock, and herdr-ai-feedbag keeps the dock at the bottom.
+- `herdr-dock` is the shared workspace used by herdr-ai-feedbag. If both plugins are installed, their blocks share the dock. The radio worker keeps the dock at the bottom every 5 seconds, including when herdr-ai-feedbag is not installed.
 - Keep `ui.agent_panel_sort` at its default, `"spaces"`.
 
 ## Actions

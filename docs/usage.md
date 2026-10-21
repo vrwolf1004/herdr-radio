@@ -23,6 +23,8 @@ herdr plugin link C:/work/app/herdr-radio
 
 If Python is not on PATH, the plugin will not run. Check with `python --version`. The herdr server inherits PATH at startup, so restart it after changing PATH.
 
+On Windows, if the menu cannot find either player, it displays an `i` prompt. Pressing it runs `winget install shinchiro.mpv` in the pane. Close and reopen the menu when the installation finishes so the player is detected.
+
 ## 2. Registering stations
 
 Find the config folder with:
@@ -126,6 +128,7 @@ Type an input in the `menu` pane and press Enter. The genre list and the station
 | `a number` | Saves that search result to `config.json` without playing it. Reports if it is already saved | Saves that station to `config.json` (not available in `My stations`) |
 | `s` | Stops playback | Stops playback |
 | `k keyword` | Searches Radio Browser. Enter a result number to play it | — |
+| `i` | On Windows, installs mpv with `winget` when neither mpv nor ffplay is found | — |
 | `b` or Enter | — | Goes back to the genre list |
 | `q` or Enter | Redraws the menu (the pane stays open) | — |
 
