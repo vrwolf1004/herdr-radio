@@ -22,6 +22,7 @@ play ── detached mpv (--title=herdr-radio) ── pane 과 무관하게 계�
 - 재생 확인과 agent 등록은 느릴 수 있어서(검색, socket 대기) 워커 스레드가 맡습니다. 메인 루프는 heartbeat와 토큰 갱신만 하므로, 워커가 느려도 토큰은 1초마다 나갑니다.
 - host가 죽으면 토큰 ttl(15초)이 지나 사이드바 값이 사라집니다. 재생 자체는 멈추지 않습니다.
 - hook은 heartbeat가 10초 안에 갱신됐으면 아무것도 하지 않습니다.
+- `ensure`는 host heartbeat와 함께 저장된 pane이 아직 존재하는지 조회합니다. pane이 닫힌 경우 heartbeat가 남아 있어도 새 dock pane과 host/menu를 다시 시작합니다.
 
 ## dock 공유
 
@@ -41,10 +42,15 @@ play ── detached mpv (--title=herdr-radio) ── pane 과 무관하게 계�
 
 | 플랫폼 | 검색 방법 |
 | --- | --- |
-| Windows | PowerShell `Get-CimInstance Win32_Process`로 `mpv.exe`/`ffplay.exe` 중 명령줄에 `--title=herdr-radio`(또는 `-window_title herdr-radio`)가 있는 것 |
-| Linux/macOS | `pgrep -f`로 같은 두 표식을 찾고, 자기 자신은 뺍니다 |
+| Windows | PowerShell `Get-CimInstance Win32_Process`에서 실행 파일 이름이 `mpv.exe` 또는 `ffplay.exe`인 프로세스만 검사하고, 명령줄에 `--title=herdr-radio`(또는 `-window_title herdr-radio`)가 있는 것 |
+| Linux/macOS | `pgrep -f` 패턴이 실행 파일 이름 `mpv`/`ffplay`와 같은 창 제목 표식을 모두 요구하며, 자기 자신은 뺍니다 |
 
 표식은 플레이어 인자에만 들어갑니다. host의 명령줄에는 `herdr-radio` 경로가 있지만 `--title=`는 없으므로 host를 플레이어로 오인하지 않습니다.
+외부 프로세스 조회 명령은 5초 제한으로 실행되며, 실패하거나 시간이 초과되면 빈 결과로 처리합니다.
+
+## 검색 결과 캐시
+
+Radio Browser 검색 결과는 상태 폴더의 `search-cache.json`에 저장됩니다. 키워드는 앞뒤 공백을 제거하고 소문자로 정규화하므로 대소문자나 가장자리 공백만 다른 동일 검색은 10분 동안 저장된 결과를 재사용합니다. 만료된 항목은 다음 검색 때 제거됩니다. 캐시 파일을 쓰지 못해도 새 검색 결과는 사용할 수 있습니다.
 
 ## 재생 실패 감지
 
@@ -83,6 +89,7 @@ Windows 파이프 경로를 확인하는 방법: 실제로 `\\.\pipe\...` 형식
 | `host.log` | host의 stderr. 오류가 여기에 남습니다 |
 | `player.pid` | 마지막으로 띄운 플레이어 pid (보조) |
 | `station.json` | 마지막 방송 이름과 URL. `start`가 같은 방송을 다시 틉니다 |
+| `search-cache.json` | Radio Browser 검색 결과 캐시 (검색어별 10분) |
 
 방송 목록은 상태 폴더가 아니라 설정 폴더(`HERDR_PLUGIN_CONFIG_DIR`)의 `config.json`입니다.
 

@@ -137,6 +137,7 @@ A genre shows 5 recommended stations. After `k keyword` search, enter a result n
 The recommended stations were checked to play in October 2026. If one stops working, search for it with `k station name` to get a current address.
 
 Search returns up to 10 results, ordered by click count, with broken stations hidden. Stream addresses change often, so search again if a station stops working.
+Search results are cached in `search-cache.json` in the plugin state folder for 10 minutes per normalized keyword (case-insensitive, surrounding whitespace ignored). Repeating a search during that window reuses its saved results.
 
 The list is redrawn in the same place, so old screens do not pile up in the scrollback. On the station list, a cassette picture is drawn above the list (its reels turn while a station plays). If the pane is too short for the whole screen, the cassette picture is hidden so the list still fits. Enlarge the pane to see it again. Ctrl+C closes the menu and returns you to a PowerShell prompt.
 

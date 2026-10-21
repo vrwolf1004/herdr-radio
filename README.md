@@ -5,6 +5,7 @@
 UI languages: English · Korean · Russian · French · Spanish · German · Japanese
 
 Search Radio Browser or play saved stations without managing a player window. Playback status appears in herdr's sidebar.
+The startup/workspace `ensure` check verifies that the radio pane exists, so it can restore the block after the pane is closed.
 
 ## Dashboard design
 

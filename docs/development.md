@@ -18,10 +18,10 @@ herdr-radio/
 │   ├── i18n.py                  언어 결정과 t(key, **values)
 │   └── locales/<언어>.json      화면 문구 (en, ko, ru, fr, es, de, ja)
 ├── tests/
-│   └── test_radio.py             설정, pane 선택, 플레이어 탐색, 검색 캐시 등의 unittest
+│   └── test_radio.py             설정, pane 존재/선택, 제한된 플레이어 탐색, 검색 캐시 등의 unittest
 ```
 
-`tests/test_radio.py`에는 방송국 설정 처리, pane 선택, 플레이어 식별, 외부 명령 제한 시간, 검색 캐시 테스트가 있습니다. 실행하려면 플러그인 폴더에서 다음 명령을 사용합니다.
+`tests/test_radio.py`에는 방송국 설정 처리, 실제 pane 존재 확인과 pane 선택, 실행 파일·표식으로 제한한 플레이어 식별, 외부 명령 5초 제한, 검색 캐시 유효 기간 테스트가 있습니다. 실행하려면 플러그인 폴더에서 다음 명령을 사용합니다.
 
 ```sh
 python -m unittest discover -s tests

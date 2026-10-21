@@ -15,6 +15,21 @@ os.environ.setdefault("HERDR_RADIO_LANG", "en")
 import radio  # noqa: E402
 
 
+class PaneAliveTest(unittest.TestCase):
+    def test_missing_pane_is_not_alive(self):
+        from unittest import mock
+        with mock.patch.object(radio.herdr_api, "cli", return_value=None):
+            self.assertFalse(radio.pane_alive("wN:p1"))
+
+    def test_existing_pane_is_alive(self):
+        from unittest import mock
+        with mock.patch.object(radio.herdr_api, "cli", return_value={"pane": {"pane_id": "wN:p1"}}):
+            self.assertTrue(radio.pane_alive("wN:p1"))
+
+    def test_no_pane_id_is_not_alive(self):
+        self.assertFalse(radio.pane_alive(None))
+
+
 class ShortNameTest(unittest.TestCase):
     def test_long_name_is_cut_with_ellipsis(self):
         name = "x" * 40

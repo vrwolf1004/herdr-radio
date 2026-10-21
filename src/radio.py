@@ -644,9 +644,16 @@ def start_detached(state_dir, command):
     )
 
 
+def pane_alive(pane_id):
+    """pane 이 아직 herdr 에 있는지. 닫힌 pane 의 heartbeat 가 몇 초 남아 있어도 블록은 다시 띄워야 한다."""
+    if not pane_id:
+        return False
+    return herdr_api.cli("pane", "get", pane_id, check=False) is not None
+
+
 def cmd_ensure(args):
     state = State(args.state)
-    if state.host_alive():
+    if state.host_alive() and pane_alive(state.read("pane.id")):
         return 0
     _, pane_id = ensure_workspace(state)
     # 사이드바 토큰과 agent 등록을 맡는 host 는 pane 밖에서 돈다.

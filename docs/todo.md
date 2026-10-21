@@ -66,3 +66,9 @@
   - `pick_pane`: 기억한 pane이 살아 있으면 그것을, 아니면 라벨·토큰이 없는 빈 pane을 고르는지
   - `load_stations`: 빈 url을 건너뛰고 name이 없으면 url을 쓰는지
   - `search` 응답 처리: 빈 `url_resolved`를 `url`로 대체하는지 (HTTP는 가짜 응답으로 막습니다)
+
+## 실행 확인에서 찾은 개선점 (2026-10-21)
+
+- [x] **ensure 가 heartbeat 만 보고 일찍 끝남** (pane 이 있는지도 확인하도록 고쳤다. `PaneAliveTest`. 살아 있는 블록에 다시 실행해도 pane 이 늘지 않음을 확인했다): `cmd_ensure`는 heartbeat 가 살아 있으면 바로 끝난다. pane 을 닫은 뒤 10초 안에 다시 실행하면 블록이 올라오지 않았다. 고칠 방향: pane 이 실제로 있는지도 확인하고, host 가 끝날 때 heartbeat 를 지운다. 확인: pane 을 닫고 바로 `ensure` 를 실행.
+- [ ] **블록을 빼는 명령이 없음**: `stop` 은 재생만 멈추고 블록은 그대로 둔다. 블록 제거 명령을 추가할지 정한다.
+- [ ] **pane 을 닫을 때 재생 정리 확인 필요**: host 가 끝나도 mpv 가 남는지 확인하고, 남으면 정리 방법을 정한다.
