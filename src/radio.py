@@ -98,8 +98,12 @@ class State:
             return None
 
     def write(self, name, value):
-        with open(self.path(name), "w", encoding="utf-8") as file:
+        # 임시 파일에 쓰고 바꿔 끼운다. 중간에 멈춰도 읽는 쪽은 예전 값이나 새 값 중 하나만 본다.
+        target = self.path(name)
+        temp = target + ".tmp"
+        with open(temp, "w", encoding="utf-8") as file:
             file.write(value)
+        os.replace(temp, target)
 
     def remove(self, name):
         try:
