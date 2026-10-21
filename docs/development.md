@@ -17,9 +17,15 @@ herdr-radio/
 │   ├── herdr_api.py             herdr CLI와 socket 호출 (feedbag의 파일을 가져온 사본)
 │   ├── i18n.py                  언어 결정과 t(key, **values)
 │   └── locales/<언어>.json      화면 문구 (en, ko, ru, fr, es, de, ja)
+├── tests/
+│   └── test_radio.py             설정, pane 선택, 플레이어 탐색, 검색 캐시 등의 unittest
 ```
 
-테스트 디렉터리는 아직 없습니다. 테스트를 추가하는 작업은 [할 일](todo.md)의 "테스트" 항목에 있습니다.
+`tests/test_radio.py`에는 방송국 설정 처리, pane 선택, 플레이어 식별, 외부 명령 제한 시간, 검색 캐시 테스트가 있습니다. 실행하려면 플러그인 폴더에서 다음 명령을 사용합니다.
+
+```sh
+python -m unittest discover -s tests
+```
 
 ## 실행해서 확인하기
 

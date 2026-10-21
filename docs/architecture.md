@@ -71,7 +71,7 @@ Windows 파이프 경로를 확인하는 방법: 실제로 `\\.\pipe\...` 형식
 
 ## 상태 파일
 
-`HERDR_PLUGIN_STATE_DIR` 아래(없으면 `%LOCALAPPDATA%\herdr\plugins\herdr-radio`)에 둡니다. 설정 폴더는 `HERDR_PLUGIN_CONFIG_DIR`이고, 없으면 `%APPDATA%\herdr\plugins\config\herdr-radio`를 봅니다.
+`HERDR_PLUGIN_STATE_DIR` 아래에 둡니다. 기본 위치는 Windows에서 `%LOCALAPPDATA%\herdr\plugins\herdr-radio`, Linux/macOS에서 `~/.local/state/herdr/plugins/herdr-radio`입니다. 설정 폴더는 `HERDR_PLUGIN_CONFIG_DIR`이며 기본 위치는 Windows에서 `%APPDATA%\herdr\plugins\config\herdr-radio`, Linux/macOS에서 `~/.config/herdr/plugins/config/herdr-radio`입니다.
 
 | 파일 | 내용 |
 | --- | --- |

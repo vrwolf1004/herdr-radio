@@ -17,7 +17,7 @@ herdr plugin link C:/work/app/herdr-radio
 - Python 3.8 이상 (표준 라이브러리만 사용)
 - mpv 또는 ffplay
   - Windows: `winget install shinchiro.mpv`로 명령줄 빌드를 설치합니다. `mpv.net`은 GUI 전용이라 `mpv` 명령이 없습니다.
-  - Windows에서 `winget`이 없으면 mpv 압축 파일을 받아 `C:\Program Files\mpv\mpv.exe`에 두면 플러그인이 이 위치도 찾습니다.
+  - Windows에서 `winget`이 없으면 mpv 압축 파일을 받아 `C:\Program Files\mpv\mpv.exe` 또는 `C:\Program Files\MPV Player\mpv.exe`에 두면 플러그인이 두 위치를 모두 찾습니다.
   - macOS: `brew install mpv`
   - Linux: 배포판 패키지 관리자로 `mpv` 설치
 
@@ -85,7 +85,7 @@ feedbag을 함께 쓰면 두 블록이 같은 `herdr-dock`에 모입니다. `$fb
 
 - `$rd_*` 토큰은 radio 블록에만 보고되므로 다른 agent 행에는 나오지 않습니다.
 - 재생이 정지 없이 끝나면(연결 실패, 스트림 끊김) 블록에 `✖ 실패`와 방송 이름이 나옵니다. 정지하거나 다시 틀면 사라집니다.
-- 맨 아래 고정은 feedbag이 담당합니다. feedbag이 없으면 radio 블록이 맨 아래에 있다는 보장이 없습니다.
+- dock은 radio host가 5초마다 맨 아래에 두려고 합니다. feedbag도 함께 쓰면 둘 다 같은 dock을 관리합니다.
 - `ui.agent_panel_sort`는 기본값 `"spaces"`로 둡니다.
 
 블록 예시:
@@ -125,14 +125,14 @@ herdr plugin action invoke start --plugin herdr-radio           # linux / macos
 | 입력 | 장르 목록 | 방송 목록 |
 | --- | --- | --- |
 | 번호 | 그 장르를 엽니다. 마지막 `내 방송국`은 `config.json` 목록입니다 | 그 방송을 재생합니다 |
-| `a 번호` | 검색 결과의 방송을 `config.json`에 저장합니다. 재생하지는 않습니다. 이미 있으면 알려 줍니다 | 그 방송을 `config.json`에 저장합니다 (`내 방송국`에서는 쓸 수 없습니다) |
+| `a 번호` | — | 그 방송을 `config.json`에 저장합니다 (`내 방송국`에서는 쓸 수 없습니다) |
 | `s` | 재생을 멈춥니다 | 재생을 멈춥니다 |
 | `k 키워드` | Radio Browser에서 검색합니다. 결과 번호를 한 번 더 입력하면 재생합니다 | — |
 | `i` | Windows에서 mpv와 ffplay를 모두 찾지 못했을 때 `winget`으로 mpv를 설치합니다 | — |
 | `b` 또는 Enter | — | 장르 목록으로 돌아갑니다 |
 | `q` 또는 Enter | 메뉴를 닫지 않고 다시 그립니다 | — |
 
-장르를 열면 추천 방송 5개가 나옵니다.
+장르를 열면 추천 방송 5개가 나옵니다. `k 키워드`로 검색한 뒤 결과 번호를 입력하면 재생하고, `a 번호`를 입력하면 재생하지 않고 `config.json`에 저장합니다.
 
 추천 방송은 2026년 10월에 재생을 확인한 목록입니다. 스트림 주소가 바뀌어 재생이 안 되면 `k 방송 이름`으로 검색해 새 주소를 쓰세요.
 

@@ -17,7 +17,7 @@ herdr plugin link C:/work/app/herdr-radio
 - Python 3.8 or later (standard library only)
 - mpv or ffplay
   - Windows: `winget install shinchiro.mpv` installs the command-line build. `mpv.net` is GUI-only and has no `mpv` command.
-  - If `winget` is unavailable on Windows, put `mpv.exe` at `C:\Program Files\mpv\mpv.exe`; the plugin checks this path too.
+  - If `winget` is unavailable on Windows, put `mpv.exe` at `C:\Program Files\mpv\mpv.exe` or `C:\Program Files\MPV Player\mpv.exe`; the plugin checks both paths.
   - macOS: `brew install mpv`
   - Linux: install `mpv` with your package manager
 
@@ -125,14 +125,14 @@ Type an input in the `menu` pane and press Enter. The genre list and the station
 | Input | Genre list | Station list |
 | --- | --- | --- |
 | number | Opens that genre. The last entry, `My stations`, is your `config.json` list | Plays that station |
-| `a number` | Saves that search result to `config.json` without playing it. Reports if it is already saved | Saves that station to `config.json` (not available in `My stations`) |
+| `a number` | — | Saves that station to `config.json` without playing it (not available in `My stations`) |
 | `s` | Stops playback | Stops playback |
 | `k keyword` | Searches Radio Browser. Enter a result number to play it | — |
 | `i` | On Windows, installs mpv with `winget` when neither mpv nor ffplay is found | — |
 | `b` or Enter | — | Goes back to the genre list |
 | `q` or Enter | Redraws the menu (the pane stays open) | — |
 
-A genre shows 5 recommended stations.
+A genre shows 5 recommended stations. After `k keyword` search, enter a result number to play it or `a number` to save it to `config.json`.
 
 The recommended stations were checked to play in October 2026. If one stops working, search for it with `k station name` to get a current address.
 
