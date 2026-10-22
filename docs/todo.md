@@ -50,7 +50,7 @@
 
 ## 공용 dock (herdr-dock)
 
-- [ ] **dock 코드 중복 정리**: `find_workspace`, `ensure_workspace`, `keep_at_bottom`이 feedbag과 거의 같습니다. feedbag의 todo "dock 규칙 정리"와 함께 공용 모듈로 빼는 방안을 검토합니다. 두 플러그인 모두 `herdr_api.py`를 복사해 쓰고 있으므로 같이 정리합니다.
+- [x] **dock 코드 중복 정리**: 자리 배정은 `herdr-dock-grid` 공용 모듈(`ensure_dock_pane`)을 씁니다. `pick_pane`과 `find_workspace`는 쓰지 않아 지웠습니다(0.5.5). `keep_at_bottom`은 radio 의 고유 동작으로 남깁니다.
 - [x] **radio 블록이 맨 아래에 있지 않을 때**: feedbag이 없으면 `keep_at_bottom`만 믿어야 합니다. feedbag todo의 "다른 블록만 있을 때 순서"와 같은 문제입니다.
   - 처리: radio 워커가 5초마다 `keep_at_bottom`을 호출합니다. dock을 맨 위로 옮긴 뒤 8초 만에 맨 아래로 돌아오는 것을 확인했습니다.
 
@@ -61,9 +61,8 @@
 - [ ] **저장 PID의 프로세스 재사용 방지 (확인 필요)**
   - PID가 재사용되면 다른 프로세스를 재생 중으로 오인하거나 중지할 수 있다. 실행 파일/명령 식별을 함께 저장하는 방안을 재현 테스트 후 결정한다.
 
-- [x] **테스트 디렉터리 만들기**: `tests/test_radio.py` 15개 (short_name, pick_pane, 방송국 목록, 검색 응답, 플레이어 패턴, 제한 시간, 검색 캐시).
+- [x] **테스트 디렉터리 만들기**: `tests/test_radio.py` 15개 (short_name, 방송국 목록, 검색 응답, 플레이어 패턴, 제한 시간, 검색 캐시).
   - `short_name`: 긴 이름이 `NAME_WIDTH`에서 잘리고 `…`이 붙는지
-  - `pick_pane`: 기억한 pane이 살아 있으면 그것을, 아니면 라벨·토큰이 없는 빈 pane을 고르는지
   - `load_stations`: 빈 url을 건너뛰고 name이 없으면 url을 쓰는지
   - `search` 응답 처리: 빈 `url_resolved`를 `url`로 대체하는지 (HTTP는 가짜 응답으로 막습니다)
 

@@ -26,12 +26,14 @@ play ── detached mpv (--title=herdr-radio) ── pane 과 무관하게 계�
 
 ## dock 공유
 
-`herdr-dock`은 feedbag과 같은 공용 workspace입니다. 규칙은 feedbag의 `architecture.md` "herdr-dock 공용 규칙"을 따릅니다.
+`herdr-dock`은 feedbag과 같은 공용 workspace입니다. 자리 배정과 정리는 `herdr-dock-grid` 공용 모듈을 씁니다(feedbag의 `architecture.md` "herdr-dock 공용 규칙" 참고).
 
-1. `herdr-dock`을 찾고, 없으면 `workspace create --no-focus`로 만듭니다.
-2. 빈 pane(라벨·토큰·agent 없음)이 있으면 쓰고, 없으면 dock을 2×2 격자로 나눕니다. 자리는 왼쪽 위, 오른쪽 위, 왼쪽 아래, 오른쪽 아래 순서입니다(`grid_split`, feedbag과 같은 규칙).
-3. `pane.report_agent`로 `radio` 가짜 agent를 등록합니다. 같은 pane에서 `menu`를 실행해 방송국 목록을 보여 줍니다.
-4. 워커가 5초마다 `workspace.move`로 dock을 맨 뒤에 둡니다. feedbag이 없어도 radio 블록은 맨 아래에 머뭅니다 (dock을 맨 위로 옮긴 뒤 8초 안에 돌아오는 것을 확인했습니다). feedbag도 같은 일을 하므로 누가 먼저 해도 결과는 같습니다.
+> `herdr-dock-grid` 연결은 선택입니다. 설치되어 있지 않아도 이 플러그인의 `src/dock_layout.py` 복사본으로 똑같이 동작합니다(기능은 복사본 기준, 여러 워크스페이스·관리 기능은 설치본에서만).
+
+1. 시작할 때 `ensure_dock_pane("herdr-radio", cwd)`로 자기 pane을 받습니다. 없으면 워크스페이스를 만들고, 빈 자리가 없으면 격자로 나눕니다.
+2. 같은 pane에 `pane.report_agent`로 `radio` 가짜 agent를 등록하고, `menu`로 방송국 목록을 보여 줍니다.
+3. 워커가 5초마다 `workspace.move`로 dock을 맨 뒤에 둡니다. feedbag이 없어도 radio 블록은 맨 아래에 머뭅니다(dock을 맨 위로 옮긴 뒤 8초 안에 돌아오는 것을 확인했습니다).
+4. 재생을 멈춰도 블록 pane은 남으므로 자리는 놓지 않습니다.
 
 ## 재생 상태 판단
 

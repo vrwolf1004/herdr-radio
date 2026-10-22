@@ -1,4 +1,4 @@
-"""herdr 호출. herdr-ai-feedbag(MIT)의 herdr_api.py 를 그대로 가져왔다. CLI 와 socket API 를 함께 쓴다.
+"""herdr 호출. CLI(herdr 바이너리)와 socket API 를 함께 쓴다.
 
 workspace.move 처럼 CLI 가 없는 요청, 그리고 애니메이션처럼 1초마다 보내는 요청은
 프로세스를 띄우지 않도록 socket 으로 직접 보낸다.
@@ -7,6 +7,7 @@ socket 은 Unix 에서는 Unix domain socket, Windows 에서는 같은 경로 �
 
 import json
 import os
+import re
 import socket
 import subprocess
 import sys
@@ -42,7 +43,6 @@ def cli(*args, check=True):
         [herdr_bin(), *[str(arg) for arg in args]],
         stdin=subprocess.DEVNULL,
         capture_output=True,
-        **({"creationflags": subprocess.CREATE_NO_WINDOW} if IS_WINDOWS else {}),
         text=True,
         encoding="utf-8",
         errors="replace",
@@ -112,7 +112,7 @@ def _exchange_pipe(path, payload):
 
 def request(method, params):
     """socket API 요청을 보내고 result 를 돌려준다."""
-    message = {"id": f"herdr-radio:{time.time_ns()}", "method": method, "params": params}
+    message = {"id": f"timekit:{time.time_ns()}", "method": method, "params": params}
     payload = (json.dumps(message, ensure_ascii=False) + "\n").encode("utf-8")
     exchange = _exchange_pipe if IS_WINDOWS else _exchange_unix
     try:
@@ -132,3 +132,20 @@ def try_request(method, params):
         return True
     except (HerdrError, ValueError):
         return False
+
+
+def installed_plugin_path(plugin_id):
+    """herdr plugin list 에서 활성화된 local plugin 의 폴더. 없거나 비활성이거나 GitHub 설치본이면 None."""
+    try:
+        completed = subprocess.run(
+            [herdr_bin(), "plugin", "list"],
+            stdin=subprocess.DEVNULL, capture_output=True, text=True, encoding="utf-8", errors="replace",
+        )
+    except OSError:
+        return None
+    pattern = re.compile(r"^- " + re.escape(plugin_id) + r" \(.*\) enabled \[local:(.+)\]$")
+    for line in completed.stdout.splitlines():
+        match = pattern.match(line.strip())
+        if match:
+            return match.group(1)
+    return None

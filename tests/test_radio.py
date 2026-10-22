@@ -42,20 +42,6 @@ class ShortNameTest(unittest.TestCase):
         self.assertEqual(radio.short_name("   "), "?")
 
 
-class PickPaneTest(unittest.TestCase):
-    def test_uses_stored_pane_when_alive_and_unclaimed(self):
-        panes = [{"pane_id": "a"}, {"pane_id": "b"}]
-        self.assertEqual(radio.pick_pane(panes, "b", set()), "b")
-
-    def test_falls_back_to_empty_pane(self):
-        panes = [{"pane_id": "a", "tokens": {"fb_claude": "1"}}, {"pane_id": "b"}]
-        self.assertEqual(radio.pick_pane(panes, "gone", set()), "b")
-
-    def test_none_when_no_empty_pane(self):
-        panes = [{"pane_id": "a", "label": "Sidebar"}]
-        self.assertIsNone(radio.pick_pane(panes, None, set()))
-
-
 class StationsTest(unittest.TestCase):
     def test_skips_empty_url_and_uses_url_as_name_when_missing(self):
         items = [{"url": "https://a"}, {"name": "B", "url": ""}, {"name": "C", "url": " https://c "}, "junk"]
