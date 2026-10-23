@@ -70,7 +70,8 @@ API_HOSTS = [
     "nl1.api.radio-browser.info",
     "at1.api.radio-browser.info",
 ]
-USER_AGENT = "herdr-radio/0.2"
+PLUGIN_VERSION = "0.5.5"  # herdr-plugin.toml 의 version 과 같아야 한다 (tests/test_user_agent.py 가 확인한다)
+USER_AGENT = f"herdr-radio/{PLUGIN_VERSION}"
 
 
 # ---------------------------------------------------------------- 경로 / 상태 파일
@@ -198,20 +199,46 @@ def load_genres():
 # ---------------------------------------------------------------- Radio Browser
 
 
+def write_host_log(line):
+    """오류 원문을 상태 폴더의 host.log 에 한 줄 덧붙인다 (플레이어 오류와 같은 파일). 기록에 실패해도 화면 동작은 막지 않는다."""
+    try:
+        os.makedirs(state_dir_path(), exist_ok=True)
+        with open(os.path.join(state_dir_path(), "host.log"), "a", encoding="utf-8") as file:
+            file.write(time.strftime("%Y-%m-%d %H:%M:%S ") + line.replace("\n", " ") + "\n")
+    except OSError:
+        pass
+
+
+last_good_host = None  # 마지막으로 응답한 호스트. 메모리에만 두고, 프로그램을 다시 켜면 처음 순서로 돌아간다.
+
+
+def host_order():
+    """마지막으로 성공한 호스트를 먼저 두고, 나머지는 API_HOSTS 순서를 그대로 쓴다."""
+    if last_good_host in API_HOSTS:
+        return [last_good_host] + [host for host in API_HOSTS if host != last_good_host]
+    return list(API_HOSTS)
+
+
 def api_get(path, params):
+    global last_good_host
     query = urllib.parse.urlencode(params)
     last_error = None
-    # 공개 서버 중 하나가 죽어 있을 수 있으므로 순서대로 시도한다.
-    for host in API_HOSTS:
+    # 공개 서버 중 하나가 죽어 있을 수 있으므로 순서대로 시도한다 (동시에 여러 개에 요청하지 않는다).
+    for host in host_order():
         req = urllib.request.Request(
             f"https://{host}{path}?{query}", headers={"User-Agent": USER_AGENT}
         )
         try:
             with urllib.request.urlopen(req, timeout=10) as resp:
-                return json.load(resp)
+                result = json.load(resp)
         except (OSError, ValueError) as error:  # ValueError: 응답이 JSON 이 아닐 때
             last_error = error
-    raise RuntimeError(i18n.t("error.radio_browser", detail=last_error))
+            continue
+        last_good_host = host
+        return result
+    # 화면에는 짧은 문구만 보이고, 예외 원문은 상태 폴더의 host.log 에 한 줄 남긴다.
+    write_host_log(f"radio-browser search failed: {last_error}")
+    raise RuntimeError(i18n.t("error.radio_browser"))
 
 
 def search(keyword, limit=10):

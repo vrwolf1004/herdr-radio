@@ -19,7 +19,7 @@
 - **목록에 방송국이 없음**: `config.json`이 `herdr plugin config-dir herdr-radio`가 보여 주는 폴더에 있는지 확인하세요.
 - **재생은 되는데 상태가 `정지`**: 플러그인이 띄운 플레이어만 인식합니다. 명령줄에 `herdr-radio` 표식(`--title=herdr-radio`)이 있는 `mpv.exe`/`ffplay.exe`를 찾습니다. 직접 띄운 mpv는 표식이 없어서 인식되지 않습니다.
 - **플레이어 상태 확인이 실패하거나 늦음**: 탐색은 mpv/ffplay 실행 파일과 플러그인의 창 제목 표식이 모두 맞는 프로세스만 대상으로 하며, 외부 조회는 5초 후 중단합니다. 다른 명령줄의 `herdr-radio` 문자열만으로는 플레이어로 간주하지 않습니다.
-- **`Radio Browser 서버에 연결하지 못했습니다`**: 공개 서버 세 곳이 모두 응답하지 않습니다. 네트워크를 확인하고 잠시 뒤 다시 시도하세요.
+- **`Radio Browser 서버에 연결하지 못했습니다`**: 공개 서버 세 곳이 모두 응답하지 않습니다. 네트워크를 확인하고 잠시 뒤 다시 시도하세요. 화면에는 짧은 문구만 보이고, 자세한 원문은 상태 폴더의 `host.log`에 한 줄로 남습니다(위치는 위 `host.log` 항목과 같습니다).
 - **pane을 닫아도 재생이 계속됨**: 정상 동작입니다. 완전히 끄려면 `stop` 액션을 쓰세요.
 - **사이드바에 `✖ 실패`가 나옴**: 정지하지 않았는데 플레이어가 끝났다는 뜻입니다. 스트림이 끊겼거나 주소가 틀렸을 수 있습니다. `menu`에서 다른 방송을 고르거나 `start`를 다시 실행하세요. 정지하거나 다시 틀면 표시가 사라집니다.
 - **`재생 중인 mpv가 없어서 볼륨을 바꿀 수 없습니다`**: 볼륨 액션은 재생 중인 mpv에만 동작합니다. 방송을 먼저 틀고 다시 실행하세요. ffplay로 재생 중이면 볼륨을 바꿀 수 없습니다.
@@ -41,7 +41,7 @@
 - **The menu has no stations**: confirm that `config.json` is in the folder shown by `herdr plugin config-dir herdr-radio`.
 - **Playing, but the state shows `stopped`**: the plugin only recognises the player it started, identified by the `--title=herdr-radio` argument. A mpv you started yourself is not recognised.
 - **Player status detection fails or is slow**: discovery is restricted to mpv/ffplay executables with the plugin's window-title marker, and external queries stop after 5 seconds. A `herdr-radio` string elsewhere in a command line is not enough to identify a player.
-- **`Radio Browser 서버에 연결하지 못했습니다` (cannot reach Radio Browser)**: all three public servers failed. Check your network and try again later.
+- **`Could not reach the Radio Browser server`**: all three public servers failed. Check your network and try again later. The screen shows only this short message; the full error text is written as one line in `host.log` in the state folder (same location as the `host.log` item above).
 - **Playback continues after closing the pane**: this is expected. Use the `stop` action to turn it off.
 - **The sidebar shows `✖ failed`**: the player ended without a stop, usually because the stream dropped or the address is wrong. Pick another station in `menu`, or run `start` again. Stopping or starting playback clears it.
 - **`재생 중인 mpv가 없어서 볼륨을 바꿀 수 없습니다` (no mpv is playing, so the volume cannot change)**: volume actions work only with a running mpv. Start a station first. Volume cannot be changed while ffplay is playing.

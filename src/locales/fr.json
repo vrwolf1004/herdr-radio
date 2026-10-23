@@ -1,5 +1,5 @@
 {
-  "error.radio_browser": "Impossible de joindre le serveur Radio Browser : {detail}",
+  "error.radio_browser": "Impossible de joindre le serveur Radio Browser",
   "error.no_player": "mpv ou ffplay est requis. Windows : winget install shinchiro.mpv",
   "token.playing": "▶ en lecture",
   "token.stopped": "■ arrêté",

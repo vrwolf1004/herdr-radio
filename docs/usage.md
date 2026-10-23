@@ -138,6 +138,8 @@ The recommended stations were checked to play in October 2026. If one stops work
 
 Search returns up to 10 results, ordered by click count, with broken stations hidden. Stream addresses change often, so search again if a station stops working.
 Search results are cached in `search-cache.json` in the plugin state folder for 10 minutes per normalized keyword (case-insensitive, surrounding whitespace ignored). Repeating a search during that window reuses its saved results.
+The search server that answered last is tried first. This memory is kept only while the program runs; it is lost when the program is restarted.
+If every search server fails, the menu shows only a short message ("Could not reach the Radio Browser server"). The full error text is written as one line in `host.log` in the state folder; see [troubleshooting.md](troubleshooting.md).
 
 The list is redrawn in the same place, so old screens do not pile up in the scrollback. On the station list, a cassette picture is drawn above the list (its reels turn while a station plays). If the pane is too short for the whole screen, the cassette picture is hidden so the list still fits. Enlarge the pane to see it again. Ctrl+C closes the menu and returns you to a PowerShell prompt.
 
