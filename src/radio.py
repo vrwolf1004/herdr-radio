@@ -70,7 +70,7 @@ API_HOSTS = [
     "nl1.api.radio-browser.info",
     "at1.api.radio-browser.info",
 ]
-PLUGIN_VERSION = "0.5.5"  # herdr-plugin.toml 의 version 과 같아야 한다 (tests/test_user_agent.py 가 확인한다)
+PLUGIN_VERSION = "0.6.1"  # herdr-plugin.toml 의 version 과 같아야 한다 (tests/test_user_agent.py 가 확인한다)
 USER_AGENT = f"herdr-radio/{PLUGIN_VERSION}"
 
 
@@ -968,14 +968,14 @@ def station_menu(args, title, options, can_save):
 
 
 def cassette_lines(frame, playing):
-    """CUI 카세트(세로로 큰 모양). 재생 중이면 두 릴이 반대 방향으로 돌고, 테이프 띠가 흐른다. 정지면 모두 멈춘다."""
+    """CUI 카세트(세로로 큰 모양). 재생 중이면 두 릴이 같은 방향으로 돌고, 테이프 띠가 왼쪽에서 오른쪽으로 흐른다. 정지면 모두 멈춘다."""
     left_spokes = "|/-\\"
-    right_spokes = "|\\-/"
+    right_spokes = "|/-\\"
     step = frame if playing else 0
     left = left_spokes[step % 4]
     right = right_spokes[step % 4]
     band = "▓▒░░▒▓" * 4
-    offset = step % 6
+    offset = (-step) % 6  # the band moves left to right
     tape = band[offset:offset + 10]
     inner = 26
     margin = " " * 5
