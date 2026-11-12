@@ -70,7 +70,7 @@ API_HOSTS = [
     "nl1.api.radio-browser.info",
     "at1.api.radio-browser.info",
 ]
-PLUGIN_VERSION = "0.6.1"  # herdr-plugin.toml 의 version 과 같아야 한다 (tests/test_user_agent.py 가 확인한다)
+PLUGIN_VERSION = "0.6.2"  # herdr-plugin.toml 의 version 과 같아야 한다 (tests/test_user_agent.py 가 확인한다)
 USER_AGENT = f"herdr-radio/{PLUGIN_VERSION}"
 
 
@@ -497,7 +497,8 @@ def play(state, station):
     kwargs = {}
     if os.name == "nt":
         # 콘솔 pane 을 닫아도 재생이 이어지도록 분리한다.
-        kwargs["creationflags"] = subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP
+        # DETACHED_PROCESS 만 쓰면 콘솔 프로그램인 재생기가 콘솔 창을 새로 띄운다. CREATE_NO_WINDOW 로 막는다.
+        kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW | subprocess.CREATE_NEW_PROCESS_GROUP
     else:
         kwargs["start_new_session"] = True
 
