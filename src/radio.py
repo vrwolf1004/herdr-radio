@@ -70,7 +70,7 @@ API_HOSTS = [
     "nl1.api.radio-browser.info",
     "at1.api.radio-browser.info",
 ]
-PLUGIN_VERSION = "0.6.2"  # herdr-plugin.toml 의 version 과 같아야 한다 (tests/test_user_agent.py 가 확인한다)
+PLUGIN_VERSION = "0.6.3"  # herdr-plugin.toml 의 version 과 같아야 한다 (tests/test_user_agent.py 가 확인한다)
 USER_AGENT = f"herdr-radio/{PLUGIN_VERSION}"
 
 
@@ -126,7 +126,10 @@ class State:
             pass
 
     def touch_heartbeat(self):
-        self.write("heartbeat", str(time.time()))
+        try:
+            self.write("heartbeat", str(time.time()))
+        except PermissionError:
+            pass  # 다른 프로세스가 heartbeat 를 읽는 중이면 교체가 막힌다. 다음 틱에 다시 쓴다
 
     def host_alive(self):
         beat = self.read("heartbeat")
@@ -581,33 +584,6 @@ def short_name(name):
     return name if len(name) <= NAME_WIDTH else name[: NAME_WIDTH - 1] + "…"
 
 
-def host_command(state_dir, config_dir, pane_id):
-    script = os.path.abspath(__file__)
-    command = [sys.executable, "-X", "utf8", script, "host", "--state", state_dir, "--pane", pane_id]
-    if config_dir:
-        command += ["--config", config_dir]
-    return command
-
-
-def start_detached(state_dir, command):
-    """host 를 pane 밖의 분리 프로세스로 띄운다. dock pane 은 목록(menu)이 쓴다.
-
-    콘솔 창은 만들지 않고, 오류는 host.log 에 남긴다 (DEVNULL 이면 죽은 이유를 알 수 없다)."""
-    kwargs = {}
-    if os.name == "nt":
-        kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW | subprocess.CREATE_NEW_PROCESS_GROUP
-    else:
-        kwargs["start_new_session"] = True
-    log = open(os.path.join(state_dir, "host.log"), "a", encoding="utf-8")
-    subprocess.Popen(
-        command,
-        stdin=subprocess.DEVNULL,
-        stdout=log,
-        stderr=log,
-        **kwargs,
-    )
-
-
 def pane_alive(pane_id):
     """pane 이 아직 herdr 에 있는지. 닫힌 pane 의 heartbeat 가 몇 초 남아 있어도 블록은 다시 띄워야 한다."""
     if not pane_id:
@@ -620,16 +596,14 @@ def cmd_ensure(args):
     if state.host_alive() and pane_alive(state.read("pane.id")):
         return 0
     _, pane_id = ensure_workspace(state)
-    # 사이드바 토큰과 agent 등록을 맡는 host 는 pane 밖에서 돈다.
-    start_detached(args.state, host_command(args.state, args.config, pane_id))
-    # dock pane 에는 방송국 목록을 띄운다. 번호를 치면 바로 재생된다.
-    herdr_api.cli("pane", "run", pane_id, *menu_command(args.state, args.config))
+    # dock pane 에는 방송국 목록(menu)을 띄운다. menu 가 host 도 겸한다 (pane 안의 프로세스여야 agent 등록이 유지된다).
+    herdr_api.cli("pane", "run", pane_id, *menu_command(args.state, args.config, pane_id))
     return 0
 
 
-def menu_command(state_dir, config_dir):
+def menu_command(state_dir, config_dir, pane_id):
     script = os.path.abspath(__file__)
-    command = [sys.executable, "-X", "utf8", script, "menu", "--state", state_dir]
+    command = [sys.executable, "-X", "utf8", script, "menu", "--state", state_dir, "--pane", pane_id]
     if config_dir:
         command += ["--config", config_dir]
     return command
@@ -1041,6 +1015,8 @@ def menu(args):
     """장르 목록을 보여 주고, 장르를 고르면 그 장르의 추천 방송을 보여 준다. 명령:
     번호 = 장르 선택, s = 정지, k 키워드 = Radio Browser 검색, i = mpv 설치, q = 닫기"""
     state = State(args.state)
+    # host 를 같은 프로세스의 스레드로 띄운다. agent 등록은 pane 안 프로세스가 있어야 유지된다.
+    threading.Thread(target=Host(args).run, daemon=True).start()
     # 실행할 때 셸이 찍은 명령줄을 지운다. 이후 화면은 맨 위로 옮겨 덮어쓰기만 한다.
     clear_screen()
     while True:

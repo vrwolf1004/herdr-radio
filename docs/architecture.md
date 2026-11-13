@@ -5,11 +5,11 @@ herdr-radio는 재생을 담당하는 mpv 프로세스와, 상태를 사이드�
 ## 프로세스
 
 ```text
-startup / workspace.created hook ── ensure ──┬─ detached host (pane 밖, host.log)
-                                             │   ├─ 메인 루프 (1초): heartbeat, $rd_now/$rd_state 토큰 갱신
-                                             │   └─ 워커 스레드 (5초): 재생 상태 확인, agent 재등록,
-                                             │                        맨 아래 위치 확인 (workspace.move)
-                                             └─ herdr-dock 의 radio pane: menu (목록)
+startup / workspace.created hook ── ensure ── herdr-dock 의 radio pane: menu (목록)
+                                                 └─ menu 안의 host 스레드 (host.log)
+                                                     ├─ 메인 루프 (1초): heartbeat, $rd_now/$rd_state 토큰 갱신
+                                                     └─ 워커 스레드 (5초): 재생 상태 확인, agent 재등록,
+                                                                            맨 아래 위치 확인 (workspace.move)
 
 start / stop / menu / play-N action ─────────── 목록 pane 과 같은 명령을 실행
 
@@ -17,7 +17,8 @@ play ── detached mpv (--title=herdr-radio) ── pane 과 무관하게 계�
 ```
 
 - 재생은 host의 자식이 아닙니다. `DETACHED_PROCESS`(Windows) 또는 `start_new_session`(Unix)으로 분리합니다. 그래서 pane을 닫아도 소리가 이어집니다.
-- host도 pane 밖의 분리 프로세스입니다. Windows에서는 `CREATE_NO_WINDOW`로 띄워 콘솔 창을 만들지 않고, stderr는 상태 폴더의 `host.log`에 남깁니다. 예전에는 `DEVNULL`로 버려서 host가 왜 죽는지 알 수 없었습니다.
+- host는 menu 프로세스 안의 스레드입니다. 예전에는 pane 밖의 분리 프로세스였지만, herdr가 pane 셸의 자식 프로세스가 있을 때만 agent 등록을 유지해서 사이드바에 `radio`가 잠깐 나왔다 사라졌습니다. 그래서 menu가 host 역할을 겸하도록 바꿨습니다. stderr는 상태 폴더의 `host.log`에 남깁니다.
+- 1초 heartbeat 쓰기가 다른 프로세스의 읽기와 겹치면 Windows에서 `PermissionError`(WinError 32)가 납니다. 이때는 그 틱의 heartbeat 쓰기만 건너뛰고 다음 틱에 다시 씁니다.
 - Windows에서 host가 실행하는 보조 프로세스(`powershell`, `tasklist`, `taskkill`)와 herdr CLI 호출에도 `CREATE_NO_WINDOW`를 붙입니다. 이것이 없으면 5초마다 터미널 창이 뜨고 꺼집니다.
 - 재생 확인과 agent 등록은 느릴 수 있어서(검색, socket 대기) 워커 스레드가 맡습니다. 메인 루프는 heartbeat와 토큰 갱신만 하므로, 워커가 느려도 토큰은 1초마다 나갑니다.
 - host가 죽으면 토큰 ttl(15초)이 지나 사이드바 값이 사라집니다. 재생 자체는 멈추지 않습니다.
@@ -31,7 +32,7 @@ play ── detached mpv (--title=herdr-radio) ── pane 과 무관하게 계�
 > `herdr-dock-grid` 연결은 선택입니다. 설치되어 있지 않아도 이 플러그인의 `src/dock_layout.py` 복사본으로 똑같이 동작합니다(기능은 복사본 기준, 여러 워크스페이스·관리 기능은 설치본에서만).
 
 1. 시작할 때 `ensure_dock_pane("herdr-radio", cwd)`로 자기 pane을 받습니다. 없으면 워크스페이스를 만들고, 빈 자리가 없으면 격자로 나눕니다.
-2. 같은 pane에 `pane.report_agent`로 `radio` 가짜 agent를 등록하고, `menu`로 방송국 목록을 보여 줍니다.
+2. 같은 pane에서 `menu`를 실행합니다. menu가 host 스레드를 함께 띄우고, 그 스레드가 `pane.report_agent`로 `radio` 가짜 agent를 등록합니다. agent 등록은 pane 셸의 자식 프로세스가 있어야 유지되므로 host를 pane 밖에 두면 안 됩니다.
 3. 워커가 5초마다 `workspace.move`로 dock을 맨 뒤에 둡니다. feedbag이 없어도 radio 블록은 맨 아래에 머뭅니다(dock을 맨 위로 옮긴 뒤 8초 안에 돌아오는 것을 확인했습니다).
 4. 재생을 멈춰도 블록 pane은 남으므로 자리는 놓지 않습니다.
 
