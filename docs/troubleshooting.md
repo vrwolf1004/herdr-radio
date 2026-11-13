@@ -14,7 +14,7 @@
   herdr plugin install vrwolf1004/herdr-radio --yes
   ```
 
-- **host가 안 돎**: 상태 폴더의 `host.log`에 오류가 남습니다 (`%LOCALAPPDATA%\herdr\plugins\herdr-radio\host.log`). 설치 폴더에서 `python src/radio.py ensure`를 실행하면 host를 다시 띄웁니다.
+- **host가 안 돎**: host는 메뉴 프로세스 안에서 돕니다. radio pane의 메뉴가 닫혔으면(Ctrl+C 등) host도 멈춥니다. 설치 폴더에서 `python src/radio.py ensure`를 실행하면 메뉴와 host를 다시 띄웁니다. 재생·검색 오류는 상태 폴더의 `host.log`에 남습니다 (`%LOCALAPPDATA%\herdr\plugins\herdr-radio\host.log`).
 - **radio pane을 닫은 뒤 블록이 돌아오지 않음**: `ensure`는 heartbeat만 보지 않고 저장된 pane이 실제로 존재하는지도 확인합니다. 플러그인 폴더에서 `python src/radio.py ensure`를 실행해 pane과 host/menu를 복구하세요.
 - **목록에 방송국이 없음**: `config.json`이 `herdr plugin config-dir herdr-radio`가 보여 주는 폴더에 있는지 확인하세요.
 - **재생은 되는데 상태가 `정지`**: 플러그인이 띄운 플레이어만 인식합니다. 명령줄에 `herdr-radio` 표식(`--title=herdr-radio`)이 있는 `mpv.exe`/`ffplay.exe`를 찾습니다. 직접 띄운 mpv는 표식이 없어서 인식되지 않습니다.
@@ -36,7 +36,7 @@
   herdr plugin install vrwolf1004/herdr-radio --yes
   ```
 
-- **Host is not running**: errors are written to `host.log` in the state folder (`%LOCALAPPDATA%\herdr\plugins\herdr-radio\host.log`). Run `python src/radio.py ensure` from the install folder to start it again.
+- **Host is not running**: the host runs inside the menu process. If the menu in the radio pane was closed (Ctrl+C, for example), the host stops too. Run `python src/radio.py ensure` from the install folder to start the menu and host again. Playback and search errors are written to `host.log` in the state folder (`%LOCALAPPDATA%\herdr\plugins\herdr-radio\host.log`).
 - **The radio block does not return after its pane was closed**: `ensure` checks that the saved pane still exists, not only its heartbeat. Run `python src/radio.py ensure` from the plugin folder to restore the pane and host/menu.
 - **The menu has no stations**: confirm that `config.json` is in the folder shown by `herdr plugin config-dir herdr-radio`.
 - **Playing, but the state shows `stopped`**: the plugin only recognises the player it started, identified by the `--title=herdr-radio` argument. A mpv you started yourself is not recognised.

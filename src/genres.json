@@ -31,23 +31,31 @@
       ]
     },
     {
-      "name": "Lo-fi",
+      "name": "Rock / Blues",
       "stations": [
-        { "name": "Lofi 24/7", "country": "US", "url": "http://usa9.fastcast4u.com/proxy/jamz?mp=/1" },
-        { "name": "REYFM #lofi", "country": "DE", "url": "https://listen.reyfm.de/lofi_320kbps.mp3" },
-        { "name": "laut.fm lofi", "country": "DE", "url": "https://stream.laut.fm/lofi" },
-        { "name": "0nlineradio LO-FI", "country": "DE", "url": "https://stream.0nlineradio.com/lo-fi" },
-        { "name": "LITT Live - Lofi & Chill", "country": "US", "url": "https://das-sa39.cdnstream1.com/5582_128" }
+        {"name": "Radio Paradise Rock Mix", "country": "US", "url": "http://stream.radioparadise.com/rock-320"},
+        {"name": "Virgin Radio Classic Rock", "country": "IT", "url": "http://icy.unitedradio.it/VirginRockClassics.mp3"},
+        {"name": "181.FM - True Blues", "country": "US", "url": "https://listen.181fm.com/181-blues_128k.mp3"}
+      ]
+    },
+    {
+      "name": "Ambient / Chill",
+      "stations": [
+        {"name": "Ambient Sleeping Pill", "country": "US", "url": "https://radio.stereoscenic.com/asp-h"},
+        {"name": "1.FM - Ambient Psychill", "country": "CH", "url": "http://strm112.1.fm/ambientpsy_mobile_mp3"},
+        {"name": "Antenne Bayern - Chillout", "country": "DE", "url": "http://mp3channels.webradio.antenne.de/chillout"},
+        {"name": "0N - Chillout", "country": "DE", "url": "https://0n-chillout.radionetz.de/0n-chillout.aac"}
       ]
     },
     {
       "name": "News",
       "stations": [
         { "name": "BBC World Service", "country": "GB", "url": "http://stream.live.vc.bbcmedia.co.uk/bbc_world_service" },
-        { "name": "NPR 24 Hour Program Stream", "country": "US", "url": "http://npr-ice.streamguys1.com/live.mp3" },
         { "name": "CNN", "country": "US", "url": "https://tunein.cdnstream1.com/2868_96.mp3" },
         { "name": "Arirang Radio", "country": "KR", "url": "http://amdlive-ch03-ctnd-com.akamaized.net/arirang_3ch/arirang_3ch_audio/chunklist_b128000.m3u8" },
-        { "name": "Deutschlandfunk", "country": "DE", "url": "https://st01.sslstream.dlf.de/dlf/01/128/mp3/stream.mp3" }
+        { "name": "NHKワールド・ラジオ日本", "country": "JP", "url": "https://masterpl.hls.nhkworld.jp/hls/r1/live/master.m3u8" },
+        { "name": "RNE Radio Nacional", "country": "ES", "url": "https://rtvelivestream.rtve.es/rtvesec/rne/rne_r1_main.m3u8" },
+        { "name": "France Info", "country": "FR", "url": "http://icecast.radiofrance.fr/franceinfo-hifi.aac" }
       ]
     }
   ]

@@ -64,13 +64,23 @@ LAYOUT_EVERY_TICKS = 5        # 맨 아래 위치 확인, agent 재등록, 재�
 HEARTBEAT_STALE_SECONDS = 10
 TOKEN_TTL_MS = 15_000
 NAME_WIDTH = 14               # 사이드바에 올릴 방송 이름 길이
+ANIMATION_SECONDS = 0.5       # 메뉴 카세트 애니메이션 프레임 간격 (짧으면 깜박임이 심하다)
+# 메뉴 패널 테마. t 키로 순서대로 바꾼다. 빈 문자열은 터미널 기본색이다.
+THEMES = {
+    "phosphor": "\x1b[38;2;51;255;51m",  # 형광 녹색 #33FF33
+    "amber": "\x1b[38;2;255;176;0m",     # 호박색 #FFB000
+    "default": "",
+}
+DEFAULT_THEME = "phosphor"
+HELP_CHOICE = "\x00help"  # Ctrl+H 가 입력 줄 맨 앞에서 눌렸을 때 read_line_animated 가 돌려주는 값
+PLAYING_POLL_SECONDS = 1      # 메뉴가 재생 여부를 다시 확인하는 간격
 
 API_HOSTS = [
     "de1.api.radio-browser.info",
     "nl1.api.radio-browser.info",
     "at1.api.radio-browser.info",
 ]
-PLUGIN_VERSION = "0.6.3"  # herdr-plugin.toml 의 version 과 같아야 한다 (tests/test_user_agent.py 가 확인한다)
+PLUGIN_VERSION = "0.6.4"  # herdr-plugin.toml 의 version 과 같아야 한다 (tests/test_user_agent.py 가 확인한다)
 USER_AGENT = f"herdr-radio/{PLUGIN_VERSION}"
 
 
@@ -839,12 +849,37 @@ def clear_screen():
 ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
 
 
+def shortcut_rows(text):
+    """도움말 문구(항목 사이 세 칸)를 팝업 줄 목록으로 나눈다."""
+    return [row.strip() for row in text.strip().split("   ")]
+
+
+def overlay_popup(lines, rows, color):
+    """lines 가운데에 도움말 팝업 상자를 덮어쓴다. 팝업 밖의 줄은 그대로 남는다."""
+    popup = render_panel(rows, title=i18n.t("hint.help"), color=color)
+    width = display_width(ANSI_RE.sub("", lines[0]))
+    left = max(0, (width - display_width(ANSI_RE.sub("", popup[0]))) // 2)
+    top = max(0, (len(lines) - len(popup)) // 2)
+    for index, row in enumerate(popup[:len(lines) - top]):
+        lines[top + index] = " " * left + row
+
+
+def hint_row(width, station):
+    """메뉴 하단 줄. 왼쪽은 재생 중인 방송, 오른쪽은 Ctrl+H 도움말(회색). 배경색 없이 글자만 쓴다."""
+    right = i18n.t("hint.help")
+    left = i18n.t("hint.playing", name=station["name"]) if station else ""
+    room = width - display_width(right) - 1  # 왼쪽 글과 오른쪽 글 사이에 한 칸은 둔다
+    while left and display_width(left) > room:
+        left = left[:-1]
+    return left + " " * (width - display_width(left) - display_width(right)) + "[2m" + right + "[22m"
+
+
 def dim_keys(text):
     """줄마다 첫 [ 부터 끝까지, 단축키 안내를 회색으로 한다."""
     lines = []
     for line in text.split("\n"):
         index = line.find("[")
-        lines.append(line if index < 0 else line[:index] + "\x1b[2m" + line[index:] + "\x1b[0m")
+        lines.append(line if index < 0 else line[:index] + "\x1b[2m" + line[index:] + "\x1b[22m")  # 22: 색은 두고 흐림만 끈다
     return "\n".join(lines)
 
 
@@ -853,11 +888,16 @@ def display_width(text):
     return sum(2 if unicodedata.east_asian_width(char) in ("W", "F") else 1 for char in text)
 
 
-def panel(*sections, min_inner=44, max_inner=70, max_rows=None, drop_first=True, title=None):
-    """timekit 패널처럼 테두리 상자에 담아 출력한다. 섹션 사이는 가로줄로 나눈다.
+def panel(*sections, **options):
+    for line in render_panel(*sections, **options):
+        print(line + "\x1b[K")
+
+
+def render_panel(*sections, min_inner=44, max_inner=70, max_rows=None, drop_first=True, title=None, color=""):
+    """timekit 패널처럼 테두리 상자에 담은 줄 목록을 돌려준다. 섹션 사이는 가로줄로 나눈다.
     각 섹션은 줄 목록이고, 한 문자열 안의 줄바꿈도 줄로 나눈다. ANSI 색 코드는 칸 수에서 뺀다.
     pane 높이를 넘으면 첫 섹션(카세트)만 뺀다. 마지막 줄까지 쓰면 줄바꿈 때 화면이 밀려 스크롤이 생기므로,
-    출력은 max_rows 줄 안에서 끝낸다. 줄 끝은 지워서 이전 프레임의 글자가 남지 않게 한다."""
+    출력은 max_rows 줄 안에서 끝난다."""
     if max_rows is None:
         max_rows = shutil.get_terminal_size((80, 24)).lines - 1
     rows = []
@@ -883,9 +923,8 @@ def panel(*sections, min_inner=44, max_inner=70, max_rows=None, drop_first=True,
         lines.append("│ " + row + " " * max(0, inner - 1 - width) + "│")
     lines.append("╰" + "─" * inner + "╯")
     if len(lines) > max_rows and drop_first and len(sections) > 1:
-        return panel(*sections[1:], min_inner=min_inner, max_inner=max_inner, max_rows=max_rows, drop_first=False, title=title)
-    for line in lines[:max_rows]:
-        print(line + "\x1b[K")
+        return render_panel(*sections[1:], min_inner=min_inner, max_inner=max_inner, max_rows=max_rows, drop_first=False, title=title, color=color)
+    return [color + line + "\x1b[0m" for line in lines[:max_rows]]
 
 
 def search_and_pick(args, keyword):
@@ -918,25 +957,30 @@ def pick_station(args, options, picked, can_save=True):
     return False
 
 
-def station_menu(args, title, options, can_save):
+def station_menu(args, title, options, can_save, color=""):
     """한 장르(또는 config.json)의 방송 목록. 위에 카세트가 돌고, b 나 빈 입력이면 장르 목록으로 돌아간다."""
     state = State(args.state)
+    help_open = False
     while True:
         def draw(frame, typed):
-            sys.stdout.write("\x1b[H")
-            panel(
-                cassette_lines(frame, is_playing(state)),
-                [f"=== {title} ==="],
-                station_lines(options),
-                [dim_keys(i18n.t("menu.genre_help_save" if can_save else "menu.genre_help").strip())],
-                title="🐺  herdr-radio  🌕",
-            )
-            sys.stdout.write("\x1b[J> " + typed)
+            # 하단은 Ctrl+H 도움말 줄, Ctrl+H 를 누르면 가운데에 명령 팝업을 띄운다 (메인 메뉴와 같다)
+            playing = is_playing(state)
+            sections = [cassette_lines(frame, playing), [f"=== {title} ==="], station_lines(options)]
+            base = render_panel(*sections, title="🐺  herdr-radio  🌕", color=color)
+            inner = display_width(ANSI_RE.sub("", base[0])) - 2
+            lines = render_panel(*sections, [hint_row(inner - 2, last_station(state) if playing else None)],
+                                 title="🐺  herdr-radio  🌕", color=color)
+            if help_open:
+                overlay_popup(lines, shortcut_rows(i18n.t("menu.genre_help_save" if can_save else "menu.genre_help")), color)
+            sys.stdout.write("\x1b[H" + "".join(line + "\x1b[K\n" for line in lines) + "\x1b[J> " + typed)
             sys.stdout.flush()
 
         choice = read_line_animated(draw)
         if choice in ("", "b"):
             return
+        if choice == HELP_CHOICE:
+            help_open = not help_open
+            continue
         if choice == "s":
             print(i18n.t("msg.stopped") if stop(state) else i18n.t("msg.not_playing"))
             continue
@@ -979,7 +1023,7 @@ def read_line_animated(draw):
     while True:
         draw(frame, "".join(buffer))
         frame += 1
-        deadline = time.time() + 0.25
+        deadline = time.time() + ANIMATION_SECONDS
         while time.time() < deadline:
             if not msvcrt.kbhit():
                 time.sleep(0.03)
@@ -990,6 +1034,9 @@ def read_line_animated(draw):
                 continue
             if ch in ("\r", "\n"):
                 return "".join(buffer).strip()
+            if ch == "\x08" and not buffer:
+                # Windows 에서 Ctrl+H 와 Backspace 는 같은 \x08 이다. 입력이 비었을 때만 도움말로 본다.
+                return HELP_CHOICE
             if ch in ("\x08", "\x7f"):
                 if buffer:
                     buffer.pop()
@@ -1021,26 +1068,60 @@ def menu(args):
     threading.Thread(target=Host(args).run, daemon=True).start()
     # 실행할 때 셸이 찍은 명령줄을 지운다. 이후 화면은 맨 위로 옮겨 덮어쓰기만 한다.
     clear_screen()
+    # 재생 여부는 백그라운드에서 갱신한다. 그리기 경로에서 외부 명령(PowerShell)을 기다리면 화면이 멈춘다.
+    playing_cache = {"value": is_playing(state)}
+
+    def watch_playing():
+        while True:
+            playing_cache["value"] = is_playing(state)
+            time.sleep(PLAYING_POLL_SECONDS)
+
+    threading.Thread(target=watch_playing, daemon=True).start()
+    last = {}  # 마지막으로 그린 줄과 입력 글자. 바뀐 줄만 다시 쓴다 (깜박임 방지)
+    theme = state.read("theme")
+    if theme not in THEMES:
+        theme = DEFAULT_THEME
+    saved_lang = i18n.normalize(state.read("lang"))  # l 키로 고른 언어는 환경 설정보다 우선한다
+    if saved_lang:
+        i18n.set_language(saved_lang)
+    help_open = False
     while True:
         genres = load_genres()
-        stations = load_stations()
-        # 마지막 항목은 사용자가 config.json 에 넣은 방송국이다.
         entries = [(g["name"], g["stations"], True) for g in genres]
-        entries.append((i18n.t("menu.my_stations", count=len(stations)), stations, False))
         missing_player = [] if find_player()[0] else [i18n.t("menu.no_player")]
+        screen = (tuple(name for name, _, _ in entries), tuple(missing_player))
+        if last.get("screen") != screen:
+            last.clear()  # 목록이 바뀌었을 때만 처음부터 다시 그린다
+            last["screen"] = screen
 
         def draw(frame, typed):
-            # 화면을 지우지 않고 맨 위로 옮겨 덮어쓴다. 지우면 전체가 깜빡인다.
-            sys.stdout.write("\x1b[H")
-            panel(
-                cassette_lines(frame, is_playing(state)),
+            # 하단 줄: 재생 중이면 왼쪽에 방송 이름, 오른쪽에 Ctrl+H 도움말. Ctrl+H 를 누르면 가운데에 팝업을 띄운다
+            sections = [
+                cassette_lines(frame, playing_cache["value"]),
                 [i18n.t("menu.genres_title")],
                 [f"{index:2}. {name}" for index, (name, _, _) in enumerate(entries, 1)],
                 *([missing_player] if missing_player else []),
-                [dim_keys(i18n.t("menu.help").strip())],
-                title="🐺  herdr-radio  🌕",
-            )
-            sys.stdout.write("\x1b[J> " + typed)
+            ]
+            base = render_panel(*sections, title="🐺  herdr-radio  🌕", color=THEMES[theme])
+            inner = display_width(ANSI_RE.sub("", base[0])) - 2  # 양쪽 테두리 두 칸을 뺀다
+            station = last_station(state) if playing_cache["value"] else None
+            lines = render_panel(*sections, [hint_row(inner - 2, station)],
+                                 title="🐺  herdr-radio  🌕", color=THEMES[theme])
+            if help_open:
+                overlay_popup(lines, shortcut_rows(i18n.t("menu.help")), THEMES[theme])
+            before = last.get("lines")
+            if before is None or len(before) != len(lines):
+                # 처음이거나 줄 수가 바뀌었을 때만 전체를 그린다
+                out = "\x1b[H" + "".join(line + "\x1b[K\n" for line in lines) + "\x1b[J> " + typed
+            else:
+                # 같은 줄은 건드리지 않는다. 카세트 줄만 바뀌므로 그 줄만 다시 쓴다
+                out = "".join(f"\x1b[{i + 1};1H{line}\x1b[K" for i, (line, old) in enumerate(zip(lines, before)) if line != old)
+                if typed != last.get("typed"):
+                    out += f"\x1b[{len(lines) + 1};1H\x1b[K> {typed}"
+                # 커서는 입력 칸 뒤에 둔다 (줄을 쓰고 나면 커서가 줄 끝에 남는다)
+                out += f"\x1b[{len(lines) + 1};{3 + display_width(typed)}H"
+            last["lines"], last["typed"] = lines, typed
+            sys.stdout.write(out)
             sys.stdout.flush()
 
         choice = read_line_animated(draw)
@@ -1048,6 +1129,29 @@ def menu(args):
         if choice in ("", "q"):
             # 목록 pane 은 닫히지 않게 다시 그린다. 정지는 s, 종료는 Ctrl+C 또는 pane 닫기.
             continue
+        if choice == HELP_CHOICE:
+            help_open = not help_open  # 팝업이 열린 상태에서 다시 누르면 닫는다
+            continue
+        if choice == "t":
+            # 테마는 색만 바뀌므로 화면은 지우지 않고 줄마다 다시 쓴다
+            names = list(THEMES)
+            theme = names[(names.index(theme) + 1) % len(names)]
+            state.write("theme", theme)
+            continue
+        if choice == "l":
+            # 순서: 시스템 설정 → 지원 언어들. 시스템 설정은 저장값을 지우고 환경에서 다시 정한다
+            options = ["system", *i18n.SUPPORTED]
+            current = saved_lang or "system"
+            nxt = options[(options.index(current) + 1) % len(options)]
+            if nxt == "system":
+                state.remove("lang")
+                i18n.set_language(i18n.detect())
+            else:
+                state.write("lang", nxt)
+                i18n.set_language(nxt)
+            saved_lang = None if nxt == "system" else nxt
+            continue
+        last.clear()  # 아래 명령은 화면에 글을 써서 패널을 다시 그려야 한다
         if choice == "s":
             print(i18n.t("msg.stopped") if stop(state) else i18n.t("msg.not_playing"))
             continue
@@ -1058,7 +1162,7 @@ def menu(args):
             install_player()
             continue
         if choice.isdigit() and 1 <= int(choice) <= len(entries):
-            station_menu(args, *entries[int(choice) - 1])
+            station_menu(args, *entries[int(choice) - 1], color=THEMES[theme])
             continue
         print(i18n.t("menu.unknown"))
 

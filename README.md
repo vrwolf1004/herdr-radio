@@ -9,37 +9,60 @@ The startup/workspace `ensure` check verifies that the radio pane exists, so it 
 
 ## Dashboard design
 
-Agents sidebar:
+Agents sidebar: `radio > <station>` while playing, `radio` when stopped.
+
+Radio menu (main screen):
 
 ```text
- ● radio
-   ▶ playing
-   Jazz Radio Bl…
+╭────────────────────────────────────────────────────╮
+│                🐺  herdr-radio  🌕                 │
+├────────────────────────────────────────────────────┤
+│             ╭─╮          ╭─╮                       │
+│             │|│ ▓▒░░▒▓▓▒░ │|│                       │
+│             ╰─╯          ╰─╯                       │
+│                  ▶ PLAY                            │
+├────────────────────────────────────────────────────┤
+│ === Genres ===                                     │
+│  1. Jazz                                           │
+│  2. Classical                                      │
+│  3. K-pop                                          │
+│  4. Rock / Blues                                   │
+│  5. Ambient / Chill                                │
+│  6. News                                           │
+├────────────────────────────────────────────────────┤
+│ playing: Jazz Radio                 Ctrl+H help    │
+╰────────────────────────────────────────────────────╯
 ```
 
-Radio menu:
+Press `Ctrl+H` to open the help popup over the list. Press `Ctrl+H` again to close it:
 
 ```text
-╭────────────────────────────────────────────╮
-│          🐺  herdr-radio  🌕               │
-├────────────────────────────────────────────┤
-│             ╭─╮          ╭─╮               │
-│             │|│ ▓▒░░▒▓▓▒░ │|│               │
-│             ╰─╯          ╰─╯               │
-│                  ▶ PLAY                     │
-├────────────────────────────────────────────┤
-│ === Genres ===                              │
-│  1. Jazz                                    │
-│  2. Classical                               │
-│  3. K-pop                                   │
-│  4. Lo-fi                                   │
-│  5. News                                    │
-│  6. My stations (config.json, 2)            │
-├────────────────────────────────────────────┤
-│ [number] genre [s] stop [k keyword] search  │
-│ [q] redraw                                  │
-╰────────────────────────────────────────────╯
+        ╭──────────────────────────────────────╮
+        │             Ctrl+H help              │
+        ├──────────────────────────────────────┤
+        │ [number] genre   [s] stop            │
+        │ [k keyword] search   [t] theme       │
+        │ [l] language   [Ctrl+C] quit         │
+        ╰──────────────────────────────────────╯
 ```
+
+Station screen (after choosing a genre): the same cassette and bottom line, with the station list. `Ctrl+H` shows `[number] play   [b] back   [s] stop   [a number] save`.
+
+### Keys
+
+Type the key and press Enter.
+
+| Key | Action |
+| --- | --- |
+| number | Open a genre; on the station screen, play that station |
+| `b` | Back (station screen) |
+| `a number` | Save a station to `config.json` (station screen) |
+| `s` | Stop playback |
+| `k keyword` | Search Radio Browser |
+| `t` | Next theme: phosphor green → amber → terminal default (saved) |
+| `l` | Next language: system → en → ko → ru → fr → es → de → ja → system (saved) |
+| `Ctrl+H` | Show or hide the help popup (Windows, when the input line is empty) |
+| `Ctrl+C` | Quit the menu |
 
 ## Installation
 
@@ -74,10 +97,7 @@ On Windows, append `-windows` to each action ID. See the [usage guide](docs/usag
 - [Development](docs/development.md)
 - [Architecture](docs/architecture.md)
 - [TODO](docs/todo.md)
-
-## License
-
-Undecided. `herdr_api.py` is taken from [herdr-ai-feedbag](https://github.com/vrwolf1004/herdr-ai-feedbag) (MIT).
+- [Additional sections](docs/readme-extras.md): sections moved out of this README
 
 ## Support the project
 

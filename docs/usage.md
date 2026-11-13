@@ -91,12 +91,12 @@ If you also use herdr-ai-feedbag, both blocks share the same `herdr-dock` worksp
 Block example:
 
 ```text
- ● radio
+ ● radio > Jazz Radio Bl…
    ▶ playing
    Jazz Radio Bl…
 ```
 
-The radio pane in the dock shows the station menu. The host loop that updates the sidebar runs as a detached process outside the pane, so the sidebar keeps updating after you close the menu.
+The radio pane in the dock shows the station menu. The host loop that updates the sidebar runs as a thread inside the menu process, so the sidebar updates while the menu is open. Closing the menu stops those updates; `ensure` starts the menu and host again.
 
 ## 4. Actions
 
@@ -120,19 +120,26 @@ herdr plugin action invoke start --plugin herdr-radio           # linux / macos
 
 ## 5. Using the menu
 
-Type an input in the `menu` pane and press Enter. The genre list and the station list share one table. Inputs are read as whole lines, so Korean jamo keys such as `ㅅ` do not work here.
+Type an input in the `menu` pane and press Enter. Inputs are read as whole lines, so Korean jamo keys such as `ㅅ` do not work here.
+
+The main screen lists the genres: Jazz, Classical, K-pop, Rock / Blues, Ambient / Chill, and News. The bottom line shows the playing station on the left and `Ctrl+H help` on the right. Press `Ctrl+H` to open the help popup over the list; press it again to close it.
 
 | Input | Genre list | Station list |
 | --- | --- | --- |
-| number | Opens that genre. The last entry, `My stations`, is your `config.json` list | Plays that station |
-| `a number` | — | Saves that station to `config.json` without playing it (not available in `My stations`) |
+| number | Opens that genre | Plays that station |
+| `a number` | — | Saves that station to `config.json` without playing it |
 | `s` | Stops playback | Stops playback |
 | `k keyword` | Searches Radio Browser. Enter a result number to play it | — |
 | `i` | On Windows, installs mpv with `winget` when neither mpv nor ffplay is found | — |
+| `t` | Next theme: phosphor green → amber → terminal default (saved) | — |
+| `l` | Next language: system → en → ko → ru → fr → es → de → ja → system (saved) | — |
+| `Ctrl+H` | Shows or hides the help popup (Windows, when the input line is empty) | Same |
 | `b` or Enter | — | Goes back to the genre list |
-| `q` or Enter | Redraws the menu (the pane stays open) | — |
+| Enter (empty) | Redraws the menu (the pane stays open) | — |
 
-A genre shows 5 recommended stations. After `k keyword` search, enter a result number to play it or `a number` to save it to `config.json`.
+The `config.json` stations are played with the `play-N` actions. They are not shown in the menu.
+
+A genre shows 3 to 6 recommended stations. After `k keyword` search, enter a result number to play it or `a number` to save it to `config.json`.
 
 The recommended stations were checked to play in October 2026. If one stops working, search for it with `k station name` to get a current address.
 

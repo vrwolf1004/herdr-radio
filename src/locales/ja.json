@@ -1,4 +1,6 @@
 {
+  "hint.playing": "再生 : {name}",
+  "hint.help": "Ctrl+H ヘルプ",
   "error.radio_browser": "Radio Browser サーバーに接続できません",
   "error.no_player": "mpv または ffplay が必要です。Windows: winget install shinchiro.mpv",
   "token.playing": "▶ 再生中",
@@ -12,7 +14,7 @@
   "msg.not_playing": "再生中の放送はありません。",
   "msg.no_index": "放送局番号 {index} がありません。config.json には {count} 件あります。",
   "menu.empty": "config.json に放送局がありません。",
-  "menu.help": "\n[番号] ジャンル   [s] 停止   [k キーワード] 検索   [q] 閉じる",
+  "menu.help": "\n[番号] ジャンル   [s] 停止   [k キーワード] 検索   [t] テーマ   [l] 言語   [Ctrl+C] 終了",
   "menu.no_results": "検索結果がありません。",
   "menu.pick_result": "検索結果の番号 (Enter=キャンセル): ",
   "menu.unknown": "不明な入力です。",
