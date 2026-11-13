@@ -640,9 +640,11 @@ class Host:
 
     def report(self):
         playing, station, failed = self.snapshot()
+        display = DISPLAY_AGENT
         if playing and station:
             now = short_name(station["name"])
             tokens = {"rd_now": now, "rd_state": i18n.t("token.playing")}
+            display = f"{DISPLAY_AGENT} > {now}"  # 사이드바 agent 이름에 재생 중인 방송을 붙인다
         elif failed and station:
             # 재생이 실패했을 때는 방송 이름과 함께 실패를 보여 준다
             tokens = {"rd_now": short_name(station["name"]), "rd_state": i18n.t("token.failed")}
@@ -651,7 +653,7 @@ class Host:
         ok = herdr_api.try_request("pane.report_metadata", {
             "pane_id": self.pane_id,
             "source": SOURCE,
-            "display_agent": DISPLAY_AGENT,
+            "display_agent": display,
             "tokens": tokens,
             "ttl_ms": TOKEN_TTL_MS,
         })
